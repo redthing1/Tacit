@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Tacit.Tests\Tacit.Tests.csproj" />
+        <ProjectReference Include="..\Tacit\Tacit.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="rt1.Minlog" Version="1.0.0" />
+    </ItemGroup>
+
+</Project>
