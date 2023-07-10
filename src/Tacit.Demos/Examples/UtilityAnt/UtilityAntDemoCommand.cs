@@ -7,7 +7,7 @@ using Minlog;
 using Tacit.Tests.Framework.Utility;
 using Xunit;
 
-namespace Tacit.Demos.Examples.AntUtility; 
+namespace Tacit.Demos.Examples.UtilityAnt; 
 
 [Command("utility ant", Description = "Ants demo with Utility AI")]
 public class UtilityAntDemoCommand : ICommand {

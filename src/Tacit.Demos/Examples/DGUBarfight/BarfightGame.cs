@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Minlog;
+using Tacit.Demos.Examples.DGUBarfight.AI;
 using Tacit.Layers.Game;
 
 namespace Tacit.Demos.Examples.DGUBarfight; 

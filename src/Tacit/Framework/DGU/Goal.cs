@@ -31,24 +31,23 @@ public class FuncPartialCondition : AbstractPartialCondition {
     }
 }
 
-public abstract class Goal : IDGUDoctorable {
-    public abstract string Name { get; }
+public abstract class Goal {
+    public virtual string Name => GetType().Name;
     public abstract long Weight { get; }
 
-    public Drive DriveGeneratedBy { get; init; } = null!;
+    public Drive Drive { get; init; } = null!;
     public List<IPartialCondition> Conditions { get; } = new();
     public List<GoalTrigger> RemovalTriggers { get; } = new();
 
     public float CurrentSatisfaction { get; protected set; }
-    public DGUDoctor? Doctor { get; set; }
 
-    protected Goal(Drive driveGeneratedBy) {
-        DriveGeneratedBy = driveGeneratedBy;
+    protected Goal(Drive drive) {
+        Drive = drive;
     }
 
-    public async Task Update(long time, FactMemory memory) {
+    public virtual async Task Update(long time, FactMemory memory) {
         CurrentSatisfaction = await Evaluate(memory);
     }
 
-    protected abstract Task<float> Evaluate(FactMemory memory);
+    public abstract Task<float> Evaluate(FactMemory memory);
 }

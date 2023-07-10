@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Tacit.Framework.DGU;
 
 public interface ITrigger {
-    Task<bool> Evaluate();
+    Task<bool> Evaluate(FactMemory memory);
 }
 
 public abstract class DriveTrigger : ITrigger {
@@ -13,7 +13,7 @@ public abstract class DriveTrigger : ITrigger {
     public DriveTrigger(Drive drive) {
         Drive = drive;
     }
-    public abstract Task<bool> Evaluate();
+    public abstract Task<bool> Evaluate(FactMemory memory);
 }
 
 public abstract class GoalTrigger : ITrigger {
@@ -21,32 +21,32 @@ public abstract class GoalTrigger : ITrigger {
     public GoalTrigger(Goal goal) {
         Goal = goal;
     }
-    public abstract Task<bool> Evaluate();
+    public abstract Task<bool> Evaluate(FactMemory memory);
 }
 
-public abstract class FactBasedTrigger : ITrigger {
-    public FactMemory FactMemory { get; }
-    public FactBasedTrigger(FactMemory factMemory) {
-        FactMemory = factMemory;
-    }
-
-    public abstract Task<bool> Evaluate();
-}
-
-public abstract class GoalGeneratorTrigger : FactBasedTrigger {
+public abstract class GoalGeneratorTrigger : ITrigger {
+    public DGUAgent Agent { get; }
     public Drive Drive { get; }
-    protected GoalGeneratorTrigger(Drive drive, FactMemory factMemory) : base(factMemory) {
+    protected GoalGeneratorTrigger(DGUAgent agent, Drive drive) {
+        Agent = agent;
         Drive = drive;
     }
     public bool GoalExists(Func<Goal, bool> predicate) {
         return Drive.CurrentGoals.Any(predicate);
     }
+    public abstract Task<bool> Evaluate(FactMemory memory);
 }
 
+/// <summary>
+/// a trigger that evaluates to true when the goal's satisfaction reaches a certain threshold
+/// </summary>
 public class GoalTriggerRemoveCompletedGoal : GoalTrigger {
-    public GoalTriggerRemoveCompletedGoal(Goal goal) : base(goal) {}
+    public float Threshold { get; }
+    public GoalTriggerRemoveCompletedGoal(Goal goal, float threshold = 1.0f) : base(goal) {
+        Threshold = threshold;
+    }
 
-    public override Task<bool> Evaluate() {
-        return Task.FromResult(Goal.CurrentSatisfaction >= 1.0f);
+    public override Task<bool> Evaluate(FactMemory memory) {
+        return Task.FromResult(Goal.CurrentSatisfaction >= Threshold);
     }
 }

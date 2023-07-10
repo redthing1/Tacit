@@ -22,6 +22,11 @@ public class DGUPlanner : IDGUDoctorable {
         RootAgent = rootAgent;
     }
 
+    public void AttachDoctor(DGUDoctor doctor) {
+        doctor.OnAttach(this);
+        Doctor = doctor;
+    }
+
     private int GetNextId() => _idCounter++;
 
     public async Task<PlanResult?> Plan(PlanInvocationContext context) {

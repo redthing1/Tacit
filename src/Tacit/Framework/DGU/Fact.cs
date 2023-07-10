@@ -6,12 +6,11 @@ public interface IFact {
     long Time { get; }
 }
 
-public record Fact<T>(ISmartObject Subject, string Attribute, T value, long time) : IFact {
+public record Fact<T>(ISmartObject Subject, string Attribute, T Value, long Time) : IFact {
     public string SubjectId => Subject.Id;
-    public long Time => time;
 
     public override string ToString() {
-        return $"{Subject}::{Attribute}={value}@{time}";
+        return $"{Subject}::{Attribute}={Value}@{Time}";
     }
 }
 

@@ -53,7 +53,7 @@ public class FactMemory : IForkable<FactMemory> {
         clone._factsAtTime = new Dictionary<long, List<IFact>>(_factsAtTime);
         return clone;
     }
-    
+
     public IFact? GetFactFromChangeKey(FactChange change) {
         // find the most recent fact about the same subject, on the same attribute
         var matchingFact = _facts.FindLast(f => f.SubjectId == change.SubjectId && f.Attribute == change.Attribute);
@@ -61,5 +61,23 @@ public class FactMemory : IForkable<FactMemory> {
             return null;
         }
         return matchingFact;
+    }
+    public IFact? GetFact(string subjectId, string attribute) {
+        var matchingFact = _facts.FindLast(f => f.SubjectId == subjectId && f.Attribute == attribute);
+        if (matchingFact == null) {
+            return null;
+        }
+        return matchingFact;
+    }
+    public IFact ExpectFact(string subjectId, string attribute) {
+        var matchingFact = _facts.FindLast(f => f.SubjectId == subjectId && f.Attribute == attribute);
+        if (matchingFact == null) {
+            throw new Exception($"Fact not found: {subjectId} {attribute}");
+        }
+        return matchingFact;
+    }
+
+    public Fact<T> ExpectFact<T>(string subjectId, string attribute) {
+        return (Fact<T>)ExpectFact(subjectId, attribute);
     }
 }

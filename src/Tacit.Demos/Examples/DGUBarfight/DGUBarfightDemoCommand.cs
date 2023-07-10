@@ -3,6 +3,8 @@ using CliFx;
 using CliFx.Attributes;
 using CliFx.Infrastructure;
 using Minlog;
+using Tacit.Demos.Examples.DGUBarfight.AI;
+using Tacit.Demos.Util;
 using Tacit.Layers.Game;
 
 namespace Tacit.Demos.Examples.DGUBarfight;
@@ -19,6 +21,10 @@ public class DGUBarfightDemoCommand : ICommand {
 
     public async ValueTask ExecuteAsync(IConsole console) {
         var game = new BarfightGame(_rootLog);
+
+        // create one person, and attach a doctor
+        var person = new DrunkPerson("Bob", new BarfightEnvironment(game));
+        person.AttachDoctor(new MinlogDGUDoctor(_rootLog));
 
         while (true) {
             var status = await game.Update();
