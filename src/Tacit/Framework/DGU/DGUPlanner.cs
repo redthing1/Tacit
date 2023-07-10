@@ -1,15 +1,34 @@
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Tacit.Framework.DGU;
 
 public class DGUPlanner {
-    private readonly FactMemory _factMemory;
-    private readonly List<Drive> _drives;
-    private readonly List<Goal> _goals;
+    private int _idCounter = 0;
+    public DGUAgent RootAgent { get; }
+    public DGUPlanner(DGUAgent rootAgent) {
+        RootAgent = rootAgent;
+    }
     
-    public DGUPlanner(FactMemory factMemory, List<Drive> drives, List<Goal> goals) {
-        _factMemory = factMemory;
-        _drives = drives;
-        _goals = goals;
+    private int GetNextId() => _idCounter++;
+
+    public async Task<Plan> Plan() {
+        // get seed plan states
+        var planStates = await GeneratePlanStatesFromInitial();
+
+        while (planStates.Count > 0) {
+            
+        }
+        
+        throw new NotImplementedException();
+    }
+
+    private Task<List<DGUPlanState>> GeneratePlanStatesFromInitial() {
+        var states = new List<DGUPlanState>();
+        var agent = RootAgent;
+        
+        // generate a root plan state
+        var rootState = new DGUPlanState(GetNextId(), hardConditions: null,
     }
 }

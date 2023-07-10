@@ -7,7 +7,7 @@ namespace Tacit.Framework.DGU;
 public abstract class DGUAgent : ISmartObject {
     public abstract string Id { get; }
     public AgentEnvironment Environment { get; }
-    public FactMemory FactMemory { get; }
+    public FactMemory FactMemory { get; private set; }
     public DGUPlanner Planner { get; }
     public List<Drive> Drives { get; } = new();
     public List<Goal> Goals { get; } = new();
@@ -19,7 +19,7 @@ public abstract class DGUAgent : ISmartObject {
     public DGUAgent(AgentEnvironment environment) {
         Environment = environment;
         FactMemory = new FactMemory();
-        Planner = new DGUPlanner(FactMemory, Drives, Goals);
+        Planner = new DGUPlanner(this);
     }
 
     #region Implement Sense
@@ -76,7 +76,7 @@ public abstract class DGUAgent : ISmartObject {
         foreach (var drive in Drives.ToArray()) {
             // update drive state
             await drive.Update();
-            
+
             // check removal triggers
             foreach (var trigger in drive.RemovalTriggers) {
                 if (await trigger.Evaluate()) {
@@ -95,7 +95,7 @@ public abstract class DGUAgent : ISmartObject {
     private async Task UpdateGoals() {
         foreach (var goal in Goals) {
             await goal.Update();
-            
+
             // check removal triggers
             foreach (var trigger in goal.RemovalTriggers) {
                 if (await trigger.Evaluate()) {
@@ -117,4 +117,13 @@ public abstract class DGUAgent : ISmartObject {
 
     #endregion
 
+    /// <summary>
+    /// deep copy/clone this to an agent that can be simulated in parallel
+    /// </summary>
+    /// <returns></returns>
+    public DGUAgent Fork() {
+        var ret = (DGUAgent)MemberwiseClone();
+        ret.FactMemory = FactMemory.Fork();
+        return ret;
+    }
 }
