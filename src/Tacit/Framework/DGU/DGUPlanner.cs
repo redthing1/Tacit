@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Tacit.Framework.DGU;
 
-public class DGUPlanner {
+public class DGUPlanner : IDGUDoctorable {
     public record PlannerConfig(long MaxSimulationDepth = 16);
 
     public record PlanInvocationContext(AllEnvironmentActions AllEnvironmentActions);
@@ -15,7 +15,7 @@ public class DGUPlanner {
     private int _idCounter = 0;
     public PlannerConfig Config { get; }
     public DGUAgent RootAgent { get; }
-    public DGUDoctor? Doctor { get; private set; }
+    public DGUDoctor? Doctor { get; set; }
 
     public DGUPlanner(PlannerConfig config, DGUAgent rootAgent) {
         Config = config;
@@ -23,10 +23,6 @@ public class DGUPlanner {
     }
 
     private int GetNextId() => _idCounter++;
-
-    public void AttachDoctor(DGUDoctor doctor) {
-        Doctor = doctor;
-    }
 
     public async Task<PlanResult?> Plan(PlanInvocationContext context) {
         // get seed plan states

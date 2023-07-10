@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Tacit.Framework.DGU;
 
-public abstract class DGUAgent : ISmartObject, IForkable<DGUAgent> {
+public abstract class DGUAgent : ISmartObject, IForkable<DGUAgent>, IDGUDoctorable {
     public virtual string Id { get; init; }
     public virtual string? Name => null;
     public AgentEnvironment Environment { get; }
@@ -11,6 +11,7 @@ public abstract class DGUAgent : ISmartObject, IForkable<DGUAgent> {
     public List<Drive> Drives { get; } = new();
     public List<Goal> Goals { get; } = new();
     public List<Sensor> Sensors { get; } = new();
+    public DGUDoctor? Doctor { get; set; }
 
     public List<VirtualAction> ConsumableActions { get; } = new();
     public List<VirtualAction> SuppliedActions { get; } = new();
@@ -19,6 +20,12 @@ public abstract class DGUAgent : ISmartObject, IForkable<DGUAgent> {
         Id = id;
         Environment = environment;
         FactMemory = new FactMemory();
+    }
+
+    public async Task Update(long time) {
+        await SenseStage(time);
+        await ThinkStage(time);
+        // await ActStage();
     }
 
     #region Implement Sense

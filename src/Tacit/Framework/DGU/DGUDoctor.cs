@@ -12,3 +12,11 @@ public abstract class DGUDoctor {
     }
     public abstract void Log(LogLevel level, string message);
 }
+
+public interface IDGUDoctorable {
+    public DGUDoctor? Doctor { get; set; }
+    
+    void AttachDoctor(DGUDoctor doctor) {
+        Doctor = doctor;
+    }
+}

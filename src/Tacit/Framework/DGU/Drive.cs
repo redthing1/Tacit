@@ -30,7 +30,7 @@ public abstract class GoalGenerator {
     }
 }
 
-public abstract class Drive {
+public abstract class Drive : IDGUDoctorable {
     public abstract string Name { get; }
     public abstract long Weight { get; }
     public GoalGenerator GoalGenerator { get; init; } = null!;
@@ -38,6 +38,7 @@ public abstract class Drive {
 
     public List<Goal> CurrentGoals { get; } = new();
     public float CurrentSatisfaction { get; protected set; }
+    public DGUDoctor? Doctor { get; set; }
 
     public async Task Update(long time, FactMemory memory) {
         // evaluate current satisfaction
