@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
-using Tacit.Systems;
+using Tacit.Legacy.Mind;
+using Tacit.Legacy.Mind.Systems;
+using Tacit.Legacy.Task;
 using Xunit;
 
 namespace Tacit.Tests.Layers.Mind;

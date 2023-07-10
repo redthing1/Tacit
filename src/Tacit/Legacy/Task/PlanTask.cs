@@ -1,4 +1,6 @@
-namespace Tacit;
+using Tacit.Legacy.Mind;
+
+namespace Tacit.Legacy.Task;
 
 public enum PlanTaskStatus {
     /// <summary>

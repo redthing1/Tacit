@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 
-namespace Tacit;
+namespace Tacit.Legacy.Mind;
 
 /// <summary>
 ///     represents the consciousness of a Wing.
@@ -12,7 +11,7 @@ public abstract class Mind<TState> : IMind where TState : MindState, new() {
     // - state
     public readonly TState state;
 
-    private Task? _consciousnessTask;
+    private System.Threading.Tasks.Task? _consciousnessTask;
 
     /// <summary>
     ///     internally used to track consciousness updates only when threadpool is disabled
@@ -50,7 +49,7 @@ public abstract class Mind<TState> : IMind where TState : MindState, new() {
         // start processing tasks
         if (UseThreadPool) {
             _consciousnessTask =
-                Task.Run(function: async () => await ConsciousnessAsync(cancelToken.Token), cancelToken.Token);
+                System.Threading.Tasks.Task.Run(function: async () => await ConsciousnessAsync(cancelToken.Token), cancelToken.Token);
         }
     }
 
@@ -93,11 +92,11 @@ public abstract class Mind<TState> : IMind where TState : MindState, new() {
         Think();
     }
 
-    private async Task ConsciousnessAsync(CancellationToken tok) {
+    private async System.Threading.Tasks.Task ConsciousnessAsync(CancellationToken tok) {
         while (!tok.IsCancellationRequested) {
             ConsciousnessStep();
 
-            await Task.Delay(consciousnessSleep, tok);
+            await System.Threading.Tasks.Task.Delay(consciousnessSleep, tok);
         }
     }
 

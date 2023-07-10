@@ -1,6 +1,6 @@
 using System.Threading;
 
-namespace Tacit;
+namespace Tacit.Legacy.Mind;
 
 public interface IMindSystem {
     bool Tick();

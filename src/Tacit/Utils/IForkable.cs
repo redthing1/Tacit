@@ -1,4 +1,4 @@
-namespace Tacit.Framework.DGU; 
+namespace Tacit.Utils; 
 
 public interface IForkable<T> {
     T Fork();

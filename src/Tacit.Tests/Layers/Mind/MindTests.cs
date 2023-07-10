@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Tacit.Legacy.Task;
 using Xunit;
 
 namespace Tacit.Tests.Layers.Mind;

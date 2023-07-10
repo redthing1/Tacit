@@ -47,6 +47,6 @@ public class MinlogDGUDoctor : DGUDoctor {
             _forLog.Warn($"Failed to attach doctor to {doctoredObjectType.Name}");
             return;
         }
-        _log.Info($"Attached doctor to {doctoredObjectType.Name}");
+        _forLog.Info($"Attached doctor to {doctoredObjectType.Name}");
     }
 }

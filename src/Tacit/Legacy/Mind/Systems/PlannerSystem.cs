@@ -1,7 +1,7 @@
 using System.Threading;
 using Tacit.Common;
 
-namespace Tacit.Systems;
+namespace Tacit.Legacy.Mind.Systems;
 
 public abstract class PlannerSystem<TMind, TState> : MindSystem<TMind, TState>
     where TMind : Mind<TState> where TState : MindState, new() {

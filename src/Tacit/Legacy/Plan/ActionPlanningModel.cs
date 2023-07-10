@@ -1,7 +1,7 @@
 using System;
 using Tacit.Framework.GOAP;
 
-namespace Tacit;
+namespace Tacit.Legacy.Plan;
 
 /// <summary>
 ///     represents a base action planning model for an agent

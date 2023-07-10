@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace Tacit;
+namespace Tacit.Legacy.Mind;
 
 /// <summary>
 ///     represents all data that is considered "state" or "working" information of the mind.
