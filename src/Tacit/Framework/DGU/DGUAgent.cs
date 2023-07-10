@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 
 namespace Tacit.Framework.DGU;
 
-public abstract class DGUAgent : ISmartObject {
+public abstract class DGUAgent : ISmartObject, IForkable<DGUAgent> {
     public abstract string Id { get; }
+    public virtual string? Name => null;
     public AgentEnvironment Environment { get; }
     public FactMemory FactMemory { get; private set; }
-    public DGUPlanner Planner { get; }
     public List<Drive> Drives { get; } = new();
     public List<Goal> Goals { get; } = new();
     public List<Sensor> Sensors { get; } = new();
@@ -19,7 +19,6 @@ public abstract class DGUAgent : ISmartObject {
     public DGUAgent(AgentEnvironment environment) {
         Environment = environment;
         FactMemory = new FactMemory();
-        Planner = new DGUPlanner(this);
     }
 
     #region Implement Sense
@@ -125,5 +124,9 @@ public abstract class DGUAgent : ISmartObject {
         var ret = (DGUAgent)MemberwiseClone();
         ret.FactMemory = FactMemory.Fork();
         return ret;
+    }
+
+    public override string ToString() {
+        return $"{nameof(DGUAgent)}({Name}#{Id})";
     }
 }

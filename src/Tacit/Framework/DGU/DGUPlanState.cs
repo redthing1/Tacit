@@ -3,30 +3,41 @@ using System.Threading.Tasks;
 
 namespace Tacit.Framework.DGU;
 
-public class DGUPlanState {
+public class DGUPlanState : IForkable<DGUPlanState> {
     public int Id { get; init; }
 
     /// <summary>
     /// must be satisfied as part of plan formulation
     /// </summary>
-    public List<PartialCondition> HardConditions { get; } = new();
+    public List<IPartialCondition>? HardGoalConditions { get; private set; } = new();
 
     /// <summary>
     /// desirable to satisfy, but not required
     /// </summary>
-    public List<PartialCondition> SoftConditions { get; } = new();
+    public List<IPartialCondition>? SoftGoalConditions { get; private set; } = new();
+
+    public FactMemory HypotheticalFacts { get; private set; } = null!;
 
     public DGUPlanState? Parent { get; set; }
-    public VirtualAction ActionGeneratedBy { get; set; } = null!;
+    public VirtualAction? ActionGeneratedBy { get; set; } = null!;
+    public float Score { get; set; }
 
-    public float Utility { get; set; }
-
-    public DGUPlanState(int id, List<PartialCondition> hardConditions, List<PartialCondition> softConditions, DGUPlanState? parent, VirtualAction actionGeneratedBy) {
+    public DGUPlanState(int id, List<IPartialCondition>? hardGoalConditions, List<IPartialCondition>? softGoalConditions, DGUPlanState? parent, FactMemory hypotheticalFacts, VirtualAction? actionGeneratedBy) {
         Id = id;
-        HardConditions = hardConditions;
-        SoftConditions = softConditions;
+        HardGoalConditions = hardGoalConditions;
+        SoftGoalConditions = softGoalConditions;
         Parent = parent;
+        HypotheticalFacts = hypotheticalFacts;
         ActionGeneratedBy = actionGeneratedBy;
+    }
+
+    public DGUPlanState Fork() {
+        var ret = (DGUPlanState)MemberwiseClone();
+        // deep copy
+        ret.HypotheticalFacts = HypotheticalFacts.Fork();
+        ret.HardGoalConditions = new List<IPartialCondition>(HardGoalConditions);
+        ret.SoftGoalConditions = new List<IPartialCondition>(SoftGoalConditions);
+        return ret;
     }
 
     public List<VirtualAction> CollectPredecessorActions() {
@@ -44,10 +55,26 @@ public class DGUPlanState {
     }
 
     public async Task Update() {
-        Utility = await Evaluate();
+        Score = await Evaluate();
     }
 
     protected async Task<float> Evaluate() {
         throw new System.NotImplementedException();
+    }
+
+    public async Task<List<IPartialCondition>> GetUnsatisfiedPreconditions() {
+        var conditions = new List<IPartialCondition>();
+        conditions.AddRange(HardGoalConditions);
+        conditions.AddRange(SoftGoalConditions);
+
+        var unsatisfiedConditions = new List<IPartialCondition>();
+        foreach (var condition in conditions) {
+            var satisfaction = await condition.Evaluate(HypotheticalFacts);
+            if (satisfaction < 1f) {
+                unsatisfiedConditions.Add(condition);
+            }
+        }
+
+        return unsatisfiedConditions;
     }
 }

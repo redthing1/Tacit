@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Tacit.Framework.DGU;
 
-public class FactMemory {
+public class FactMemory : IForkable<FactMemory> {
     private List<IFact> _facts = new();
     private Dictionary<long, List<IFact>> _factsAtTime = new();
 
@@ -52,5 +52,14 @@ public class FactMemory {
         clone._facts = new List<IFact>(_facts);
         clone._factsAtTime = new Dictionary<long, List<IFact>>(_factsAtTime);
         return clone;
+    }
+    
+    public IFact? GetFactFromChangeKey(FactChange change) {
+        // find the most recent fact about the same subject, on the same attribute
+        var matchingFact = _facts.FindLast(f => f.SubjectId == change.SubjectId && f.Attribute == change.Attribute);
+        if (matchingFact == null) {
+            return null;
+        }
+        return matchingFact;
     }
 }

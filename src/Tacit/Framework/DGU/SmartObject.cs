@@ -4,6 +4,7 @@ namespace Tacit.Framework.DGU;
 
 public interface ISmartObject {
     string Id { get; }
+    string? Name { get; }
 
     /// <summary>
     /// the actions that this object can consume
@@ -18,6 +19,7 @@ public interface ISmartObject {
 
 public abstract class SmartObject : ISmartObject {
     public abstract string Id { get; }
+    public virtual string? Name => null;
     public List<VirtualAction> ConsumableActions { get; } = new();
     public List<VirtualAction> SuppliedActions { get; } = new();
 }

@@ -1,6 +1,12 @@
-namespace Tacit.Framework.DGU; 
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
+namespace Tacit.Framework.DGU;
+
+public record WorldDiff(FactChange Change, IFact Fact, long depth);
+    
 public abstract class VirtualEffect {
     public FactChange Change { get; init; } = null!;
-    public abstract IFact Simulate(IFact sourceFact);
+    
+    public abstract Task<List<WorldDiff>> SimulateInWorld(WorldDiff diff);
 }
