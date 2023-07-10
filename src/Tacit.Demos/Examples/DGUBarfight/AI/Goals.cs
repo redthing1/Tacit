@@ -13,7 +13,9 @@ public class HealGoal : Goal {
     }
     public override long Weight => 10;
     public override async Task<float> Evaluate(FactMemory memory) {
-        return await ScoreHealthIsHigh(memory);
+        var score = await ScoreHealthIsHigh(memory);
+        Drive.Agent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"{GetType().Name}::Evaluate: {score}");
+        return score;
     }
 
     private Task<float> ScoreHealthIsHigh(FactMemory memory) {

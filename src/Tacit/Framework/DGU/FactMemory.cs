@@ -18,7 +18,7 @@ public class FactMemory : IForkable<FactMemory> {
         _factsAtTime.Clear();
     }
 
-    public void Add(IFact fact) {
+    public void AddFact(IFact fact) {
         _facts.Add(fact);
         if (!_factsAtTime.ContainsKey(fact.Time)) {
             _factsAtTime[fact.Time] = new List<IFact>();
@@ -26,13 +26,13 @@ public class FactMemory : IForkable<FactMemory> {
         _factsAtTime[fact.Time].Add(fact);
     }
 
-    public void Update(IFact fact) {
+    public void UpdateFact(IFact fact) {
         // remove old fact
-        Remove(fact);
+        RemoveFact(fact);
         // add new fact
-        Add(fact);
+        AddFact(fact);
     }
-    private void Remove(IFact fact) {
+    private void RemoveFact(IFact fact) {
         _facts.Remove(fact);
         _factsAtTime[fact.Time].Remove(fact);
     }

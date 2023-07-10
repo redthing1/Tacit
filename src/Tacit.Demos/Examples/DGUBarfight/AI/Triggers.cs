@@ -12,6 +12,7 @@ public class LowHealthTrigger : GoalGeneratorTrigger {
         // check if health is low
         var healthFact = memory.ExpectFact<float>(Agent.Id, FactAttributes.PERSON_HEALTH);
         var healthIsLow = healthFact.Value < 0.5f;
+        Agent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"{GetType().Name}::Evaluate: {healthIsLow}");
         return Task.FromResult(healthIsLow);
     }
 }

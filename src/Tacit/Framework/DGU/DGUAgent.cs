@@ -42,7 +42,7 @@ public abstract class DGUAgent : ISmartObject, IForkable<DGUAgent>, IDGUDoctorab
     /// <returns></returns>
     private Task UpdateSensors(long time) {
         foreach (var sensor in Sensors) {
-            sensor.Update(time);
+            sensor.Update(time, FactMemory);
         }
 
         return Task.CompletedTask;

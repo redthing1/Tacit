@@ -25,6 +25,7 @@ public class DGUBarfightDemoCommand : ICommand {
         // create one person, and attach a doctor
         var person = new DrunkPerson("Bob", new BarfightEnvironment(game));
         person.AttachDoctor(new MinlogDGUDoctor(_rootLog));
+        game.AddPerson(person);
 
         while (true) {
             var status = await game.Update();
