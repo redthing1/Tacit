@@ -10,4 +10,8 @@
         <PackageReference Include="C5" Version="3.0.0-rc" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Legacy\" />
+    </ItemGroup>
+
 </Project>
