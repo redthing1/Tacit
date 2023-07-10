@@ -1,23 +1,27 @@
-﻿using System;
+﻿using CliFx;
+using Microsoft.Extensions.DependencyInjection;
 using Minlog;
-using Tacit.Tests.Framework.Utility;
-using Xunit;
 
-namespace Tacit.Demos;
+// var logger = new Logger(Verbosity.Information);
+var logger = new Logger(Verbosity.Trace);
+logger.Sinks.Add(new Logger.ConsoleSink());
 
-internal class Program {
-    private static void Main(string[] args) {
-        Console.WriteLine("mind demos");
+// Log.Logger.Information("Solaris DIB CLI v{Version}", typeof(Program).Assembly.GetName().Version);
 
-        var log = new Logger(Verbosity.Information);
-        log.Verbosity = Verbosity.Trace;
-        log.Sinks.Add(new Logger.ConsoleSink());
+return await new CliApplicationBuilder()
+    .SetDescription("Demos for Tacit AI")
+    .AddCommandsFromThisAssembly()
+    .UseTypeActivator(commandTypes => {
+        // We use Microsoft.Extensions.DependencyInjection for injecting dependencies in commands
+        var services = new ServiceCollection();
 
-        log.Info("testing cake game");
-        // test cake game
-        var game = new CakeGame();
-        var result = game.Run(100000);
-        Assert.True(result);
-        log.Info("cake game success");
-    }
-}
+        services.AddSingleton(logger);
+
+        // Register all commands as transient services
+        foreach (var commandType in commandTypes)
+            services.AddTransient(commandType);
+
+        return services.BuildServiceProvider();
+    })
+    .Build()
+    .RunAsync();

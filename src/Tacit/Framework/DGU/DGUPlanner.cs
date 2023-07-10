@@ -36,7 +36,8 @@ public class DGUPlanner {
         while (planStates.Count > 0) {
             // evaluate plan states and take the highest scoring one
             foreach (var planState in planStates) {
-                await planState.Update();
+                // await planState.Update();
+                planState.Score = await RootAgent.EvaluatePlanState(planState);
             }
             var bestPlanState = planStates.MaxBy(x => x.Score);
             if (bestPlanState == null)
@@ -69,8 +70,7 @@ public class DGUPlanner {
             foreach (var action in possibleNextActions) {
                 // simulate the execution of the action
                 var successorState = await SimulateActionExecution(bestPlanState, action);
-                // evaluate the successor state
-                await successorState.Update();
+                // add a successor state to the list
                 successorStates.Add(successorState);
             }
 

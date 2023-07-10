@@ -1,4 +1,4 @@
-using Tacit.Framework.DGU;
+using System;
 using Xunit;
 
 namespace Tacit.Tests.Framework.DGU;
@@ -6,15 +6,11 @@ namespace Tacit.Tests.Framework.DGU;
 public class DguBasicTests {
     [Fact]
     public void CanInitAgent() {
-        var agent = new DguAgent();
+        throw new NotImplementedException();
     }
 
     [Fact]
     public void CanRunEmptySta() {
-        var agent = new DguAgent();
-
-        agent.Sense();
-        agent.Think();
-        agent.Act();
+        throw new NotImplementedException();
     }
 }

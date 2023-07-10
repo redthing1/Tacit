@@ -1,11 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Tacit.Framework.DGU;
 
 public abstract class DGUAgent : ISmartObject, IForkable<DGUAgent> {
-    public abstract string Id { get; }
+    public virtual string Id { get; init; }
     public virtual string? Name => null;
     public AgentEnvironment Environment { get; }
     public FactMemory FactMemory { get; private set; }
@@ -16,7 +15,8 @@ public abstract class DGUAgent : ISmartObject, IForkable<DGUAgent> {
     public List<VirtualAction> ConsumableActions { get; } = new();
     public List<VirtualAction> SuppliedActions { get; } = new();
 
-    public DGUAgent(AgentEnvironment environment) {
+    public DGUAgent(string id, AgentEnvironment environment) {
+        Id = id;
         Environment = environment;
         FactMemory = new FactMemory();
     }
@@ -27,9 +27,9 @@ public abstract class DGUAgent : ISmartObject, IForkable<DGUAgent> {
     /// sensors read data from the environment and update facts
     /// </summary>
     /// <returns></returns>
-    private Task UpdateSensors() {
+    private Task UpdateSensors(long time) {
         foreach (var sensor in Sensors) {
-            sensor.Update();
+            sensor.Update(time);
         }
 
         return Task.CompletedTask;
@@ -37,44 +37,41 @@ public abstract class DGUAgent : ISmartObject, IForkable<DGUAgent> {
 
     #endregion
 
-    #region Implement Act
-
-    private Task PropagateEffects() {
-        return Task.CompletedTask;
-    }
-
-    #endregion
+    // #region Implement Act
+    //
+    // private Task PropagateEffects() {
+    //     return Task.CompletedTask;
+    // }
+    //
+    // #endregion
 
     #region Sense-Think-Act outline
 
-    public async Task SenseStage() {
-        await UpdateSensors();
+    public async Task SenseStage(long time) {
+        await UpdateSensors(time);
     }
 
-    public async Task ThinkStage() {
+    public async Task ThinkStage(long time) {
         // - update internal state
-        await UpdateDrives();
-        await UpdateGoals();
-        await UpdateInternalState();
-
-        // - ask the planning algorithm
-        await RequestPlans();
+        await UpdateDrives(time);
+        await UpdateGoals(time);
+        await UpdateInternalState(time);
     }
 
-    public Task ActStage() {
-        PropagateEffects();
-
-        return Task.CompletedTask;
-    }
+    // public Task ActStage() {
+    //     PropagateEffects();
+    //
+    //     return Task.CompletedTask;
+    // }
 
     #endregion
 
     #region Implement Think
 
-    private async Task UpdateDrives() {
+    private async Task UpdateDrives(long time) {
         foreach (var drive in Drives.ToArray()) {
             // update drive state
-            await drive.Update();
+            await drive.Update(time, FactMemory);
 
             // check removal triggers
             foreach (var trigger in drive.RemovalTriggers) {
@@ -91,9 +88,9 @@ public abstract class DGUAgent : ISmartObject, IForkable<DGUAgent> {
         }
     }
 
-    private async Task UpdateGoals() {
+    private async Task UpdateGoals(long time) {
         foreach (var goal in Goals) {
-            await goal.Update();
+            await goal.Update(time, FactMemory);
 
             // check removal triggers
             foreach (var trigger in goal.RemovalTriggers) {
@@ -104,14 +101,27 @@ public abstract class DGUAgent : ISmartObject, IForkable<DGUAgent> {
         }
     }
 
-    private async Task UpdateInternalState() {
-        throw new NotImplementedException();
+    protected virtual Task UpdateInternalState(long time) {
+        return Task.CompletedTask;
     }
 
-    protected abstract Task<float> Evaluate();
+    public virtual async Task<float> EvaluateAggregateDriveSatisfaction(FactMemory memory) {
+        float totalDriveSatisfaction = 0;
+        long totalDriveWeight = 0;
+        foreach (var drive in Drives) {
+            var satisfaction = await drive.Evaluate(memory);
+            totalDriveSatisfaction += satisfaction * drive.Weight;
+            totalDriveWeight += drive.Weight;
+        }
+        if (totalDriveWeight == 0) {
+            return 0;
+        }
 
-    private Task RequestPlans() {
-        throw new NotImplementedException();
+        return totalDriveSatisfaction / totalDriveWeight;
+    }
+
+    public virtual Task<float> EvaluatePlanState(DGUPlanState planState) {
+        return EvaluateAggregateDriveSatisfaction(planState.HypotheticalFacts);
     }
 
     #endregion

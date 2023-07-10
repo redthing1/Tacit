@@ -11,7 +11,7 @@ public abstract class Sensor {
         _factMemory = factMemory;
     }
 
-    public virtual Task Update() {
+    public virtual Task Update(long time) {
         return Task.CompletedTask;
     }
 }

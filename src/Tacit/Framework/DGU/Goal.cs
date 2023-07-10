@@ -45,9 +45,9 @@ public abstract class Goal {
         DriveGeneratedBy = driveGeneratedBy;
     }
 
-    public async Task Update() {
-        CurrentSatisfaction = await Evaluate();
+    public async Task Update(long time, FactMemory memory) {
+        CurrentSatisfaction = await Evaluate(memory);
     }
 
-    protected abstract Task<float> Evaluate();
+    protected abstract Task<float> Evaluate(FactMemory memory);
 }

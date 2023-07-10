@@ -54,14 +54,6 @@ public class DGUPlanState : IForkable<DGUPlanState> {
         return actionPredecessors;
     }
 
-    public async Task Update() {
-        Score = await Evaluate();
-    }
-
-    protected async Task<float> Evaluate() {
-        throw new System.NotImplementedException();
-    }
-
     public async Task<List<IPartialCondition>> GetUnsatisfiedPreconditions() {
         var conditions = new List<IPartialCondition>();
         conditions.AddRange(HardGoalConditions);

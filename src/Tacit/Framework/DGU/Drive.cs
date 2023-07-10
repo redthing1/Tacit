@@ -33,31 +33,25 @@ public abstract class GoalGenerator {
 public abstract class Drive {
     public abstract string Name { get; }
     public abstract long Weight { get; }
-    
-    public FactMemory Memory { get; }
     public GoalGenerator GoalGenerator { get; init; } = null!;
     public List<DriveTrigger> RemovalTriggers { get; } = new();
 
     public List<Goal> CurrentGoals { get; } = new();
     public float CurrentSatisfaction { get; protected set; }
-    
-    public Drive(FactMemory memory) {
-        Memory = memory;
-    }
 
-    public async Task Update() {
+    public async Task Update(long time, FactMemory memory) {
         // evaluate current satisfaction
-        CurrentSatisfaction = await Evaluate();
+        CurrentSatisfaction = await Evaluate(memory);
 
         // check generator to see if more goals should be created
         var createdGoals = await GoalGenerator.GenerateGoals();
         
         // evaluate the newly created goals, then add them to the list of current goals
         foreach (var goal in createdGoals) {
-            await goal.Update();
+            await goal.Update(time, memory);
             CurrentGoals.Add(goal);
         }
     }
 
-    protected abstract Task<float> Evaluate();
+    public abstract Task<float> Evaluate(FactMemory memory);
 }
