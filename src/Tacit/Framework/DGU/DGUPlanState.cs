@@ -57,8 +57,8 @@ public class DGUPlanState : IForkable<DGUPlanState> {
 
     public async Task<List<IPartialCondition>> GetUnsatisfiedPreconditions() {
         var conditions = new List<IPartialCondition>();
-        conditions.AddRange(HardGoalConditions);
-        conditions.AddRange(SoftGoalConditions);
+        if (HardGoalConditions != null) conditions.AddRange(HardGoalConditions);
+        if (SoftGoalConditions != null) conditions.AddRange(SoftGoalConditions);
 
         var unsatisfiedConditions = new List<IPartialCondition>();
         foreach (var condition in conditions) {

@@ -5,6 +5,7 @@ using CliFx.Infrastructure;
 using Minlog;
 using Tacit.Demos.Examples.DGUBarfight.AI;
 using Tacit.Demos.Util;
+using Tacit.Framework.DGU;
 using Tacit.Layers.Game;
 
 namespace Tacit.Demos.Examples.DGUBarfight;
@@ -25,6 +26,7 @@ public class DGUBarfightDemoCommand : ICommand {
         // create one person, and attach a doctor
         var person = new DrunkPerson("Bob", new BarfightEnvironment(game));
         person.AttachDoctor(new MinlogDGUDoctor(_rootLog));
+        person.AttachPlanner(new DGUPlanner(new DGUPlanner.PlannerConfig(), person));
         game.AddPerson(person);
 
         while (true) {

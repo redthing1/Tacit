@@ -12,6 +12,7 @@ public abstract class DGUAgent : ISmartObject, IForkable<DGUAgent>, IDGUDoctorab
     public List<Drive> Drives { get; } = new();
     public List<Goal> Goals { get; } = new();
     public List<Sensor> Sensors { get; } = new();
+    public DGUPlanner? Planner { get; private set; }
     public DGUDoctor? Doctor { get; set; }
 
     public List<VirtualAction> ConsumableActions { get; } = new();
@@ -26,6 +27,11 @@ public abstract class DGUAgent : ISmartObject, IForkable<DGUAgent>, IDGUDoctorab
     public void AttachDoctor(DGUDoctor doctor) {
         doctor.OnAttach(this);
         Doctor = doctor;
+    }
+    
+    public DGUPlanner AttachPlanner(DGUPlanner planner) {
+        Planner = planner;
+        return planner;
     }
 
     public async Task Update(long time) {

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Minlog;
 using Tacit.Demos.Examples.DGUBarfight.AI;
+using Tacit.Framework.DGU;
 using Tacit.Layers.Game;
 
 namespace Tacit.Demos.Examples.DGUBarfight;
@@ -30,6 +31,9 @@ public class BarfightGame : SimpleGame {
         // update all the people
         foreach (var person in _people) {
             await person.Update(Steps);
+            var planCtx = new DGUPlanner.PlanInvocationContext(Steps);
+            var personPlan = await person.Planner!.Plan(planCtx);
+            _log.Info($"  Person {person.Id} plan: {personPlan}");
         }
 
         return Status.Continue;

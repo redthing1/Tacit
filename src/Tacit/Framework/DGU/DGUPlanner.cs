@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Tacit.Framework.DGU;
@@ -8,9 +9,20 @@ namespace Tacit.Framework.DGU;
 public class DGUPlanner : IDGUDoctorable {
     public record PlannerConfig(long MaxSimulationDepth = 16);
 
-    public record PlanInvocationContext(AllEnvironmentActions AllEnvironmentActions);
+    public record PlanInvocationContext(long time);
 
-    public record PlanResult(List<VirtualAction> Actions);
+    public record PlanResult(List<VirtualAction> Actions) {
+        public override string ToString() {
+            var sb = new StringBuilder();
+            sb.Append("[");
+            foreach (var action in Actions) {
+                sb.Append(action);
+                sb.Append(", ");
+            }
+            sb.Append("]");
+            return sb.ToString();
+        }
+    }
 
     private int _idCounter = 0;
     public PlannerConfig Config { get; }
@@ -59,7 +71,7 @@ public class DGUPlanner : IDGUDoctorable {
 
             // find actions that can satisfy the unsatisfied preconditions
             foreach (var unsatisfiedPrecondition in unsatisfiedPreconditions) {
-                var actionsApplicableToPrecondition = FindApplicableActions(unsatisfiedPrecondition, RootAgent.ConsumableActions, context.AllEnvironmentActions);
+                var actionsApplicableToPrecondition = FindApplicableActions(unsatisfiedPrecondition, RootAgent.ConsumableActions);
                 foreach (var applicableAction in actionsApplicableToPrecondition) {
                     // var mappedAction = MapKeysToFacts(applicableAction, initialFacts);
                     // possibleNextActions.Add(mappedAction);
@@ -203,7 +215,7 @@ public class DGUPlanner : IDGUDoctorable {
     //     return mappedAction;
     // }
 
-    private IEnumerable<VirtualAction> FindApplicableActions(IPartialCondition condition, List<VirtualAction> consumableActions, AllEnvironmentActions allActions) {
+    private IEnumerable<VirtualAction> FindApplicableActions(IPartialCondition condition, List<VirtualAction> consumableActions) {
         var candidates = new List<VirtualAction>();
         foreach (var action in consumableActions) {
             // see if the effect of the action matches the condition
