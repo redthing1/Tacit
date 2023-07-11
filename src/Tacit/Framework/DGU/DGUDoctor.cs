@@ -8,7 +8,8 @@ public abstract class DGUDoctor {
         Error = 0,
         Warning = 1,
         Info = 2,
-        Trace = 3,
+        Debug = 3,
+        Trace = 4,
     }
 
     public abstract void Log(LogLevel level, string message);

@@ -70,4 +70,8 @@ public class DGUPlanState : IForkable<DGUPlanState> {
 
         return unsatisfiedConditions;
     }
+
+    public override string ToString() {
+        return base.ToString();
+    }
 }

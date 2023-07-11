@@ -13,8 +13,12 @@ public class MyStatsSensor : Sensor {
         base.Update(time, memory);
 
         var myStats = Environment.Game.PersonStatsMap[Agent];
+        
         // create a fact for the agent's health
-        memory.AddFact(new Fact<float>(Agent, FactAttributes.PERSON_HEALTH, myStats.Health, time));
+        memory.AddFact(new Fact<float>(Agent, Constants.Facts.PERSON_HEALTH, myStats.Health, time));
+        
+        // create a fact for the agent's drunkenness
+        memory.AddFact(new Fact<float>(Agent, Constants.Facts.PERSON_DRUNKENNESS, myStats.Drunkenness, time));
 
         return Task.CompletedTask;
     }

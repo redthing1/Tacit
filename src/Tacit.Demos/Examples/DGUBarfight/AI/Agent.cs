@@ -6,5 +6,7 @@ public class DrunkPerson : DGUAgent {
     public DrunkPerson(string id, AgentEnvironment environment) : base(id, environment) {
         Sensors.Add(new MyStatsSensor(this));
         Drives.Add(new StayAlive(this));
+        
+        ConsumableActions.Add(new DrinkAlcoholAction(supplier: this, consumer: this));
     }
 }

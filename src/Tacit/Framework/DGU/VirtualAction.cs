@@ -10,12 +10,17 @@ public record AllEnvironmentActions(List<VirtualAction> Actions);
 
 public abstract class VirtualAction {
     public abstract string Name { get; }
-    public abstract long Weight { get; }
+    // public abstract long Weight { get; }
 
     public List<IPartialCondition> Preconditions { get; private set; } = new();
     public List<VirtualEffect> Effects { get; private set; } = new();
-    public ISmartObject Supplier { get; init; } = null!;
-    public ISmartObject Consumer { get; init; } = null!;
+    public ISmartObject? Supplier { get; init; }
+    public ISmartObject? Consumer { get; init; }
+
+    protected VirtualAction(ISmartObject? supplier, ISmartObject? consumer) {
+        Supplier = supplier;
+        Consumer = consumer;
+    }
 
     // public abstract Task<List<IFact>> SimulateWorldEffects(in DGUPlanState state);
 

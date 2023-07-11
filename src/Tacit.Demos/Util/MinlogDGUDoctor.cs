@@ -25,6 +25,9 @@ public class MinlogDGUDoctor : DGUDoctor {
             case LogLevel.Info:
                 _log.Info(message);
                 break;
+            case LogLevel.Debug:
+                _log.Debug(message);
+                break;
             case LogLevel.Trace:
                 _log.Trace(message);
                 break;

@@ -13,5 +13,10 @@ public class StayAlive : Drive {
                 new LowHealthTrigger(agent, this),
                 () => new HealGoal(this))
         );
+        GoalGenerator.TriggeredGoals.Add(
+            new GoalGenerator.TriggeredGoal(
+                new HighDrunkennessTrigger(agent, this),
+                () => new SoberUpGoal(this))
+        );
     }
 }

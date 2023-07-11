@@ -42,9 +42,11 @@ public class DGUPlanner : IDGUDoctorable {
     private int GetNextId() => _idCounter++;
 
     public async Task<PlanResult?> Plan(PlanInvocationContext context) {
+        Doctor?.Log(DGUDoctor.LogLevel.Info, $"Planning for agent {RootAgent}");
         // get seed plan states
         var planStates = await GenerateInitialPlanStates();
         var initialFacts = RootAgent.FactMemory;
+        Doctor?.Log(DGUDoctor.LogLevel.Debug, $"  Initial plan states: {planStates.Count}");
 
         while (planStates.Count > 0) {
             // evaluate plan states and take the highest scoring one
@@ -59,27 +61,34 @@ public class DGUPlanner : IDGUDoctorable {
             // remove best plan state from list
             planStates.Remove(bestPlanState);
 
+            Doctor?.Log(DGUDoctor.LogLevel.Debug, $"  Selected best plan state: {bestPlanState}");
+
             var unsatisfiedPreconditions = await bestPlanState.GetUnsatisfiedPreconditions();
             if (!unsatisfiedPreconditions.Any()) {
                 // if there are no unsatisfied preconditions, then we have found a plan
+                Doctor?.Log(DGUDoctor.LogLevel.Info, $"  No unsatisfied preconditions. Found plan: {bestPlanState}");
                 return new PlanResult(bestPlanState.CollectPredecessorActions());
             }
 
             // begin generating successor plan states
+            Doctor?.Log(DGUDoctor.LogLevel.Debug, $"  Generating successor plan states");
             var possibleNextActions = new List<VirtualAction>();
             var successorStates = new List<DGUPlanState>();
 
             // find actions that can satisfy the unsatisfied preconditions
             foreach (var unsatisfiedPrecondition in unsatisfiedPreconditions) {
+                Doctor?.Log(DGUDoctor.LogLevel.Trace, $"    Checking unsatisfied precondition: {unsatisfiedPrecondition}");
                 var actionsApplicableToPrecondition = FindApplicableActions(unsatisfiedPrecondition, RootAgent.ConsumableActions);
                 foreach (var applicableAction in actionsApplicableToPrecondition) {
                     // var mappedAction = MapKeysToFacts(applicableAction, initialFacts);
                     // possibleNextActions.Add(mappedAction);
+                    Doctor?.Log(DGUDoctor.LogLevel.Trace, $"        Found applicable action: {applicableAction}");
                     possibleNextActions.Add(applicableAction);
                 }
             }
 
             // simulate each action and generate a successor state
+            Doctor?.Log(DGUDoctor.LogLevel.Debug, $"    Simulating actions");
             foreach (var action in possibleNextActions) {
                 // simulate the execution of the action
                 var successorState = await SimulateActionExecution(bestPlanState, action);
@@ -88,6 +97,7 @@ public class DGUPlanner : IDGUDoctorable {
             }
 
             // add successor plan states to search space
+            Doctor?.Log(DGUDoctor.LogLevel.Debug, $"    Adding {successorStates.Count} successor plan states to search space");
             planStates.AddRange(successorStates);
         }
 
@@ -126,7 +136,7 @@ public class DGUPlanner : IDGUDoctorable {
                                 GetNextId(), hardGoalConditions: hardGoalConditions, softGoalConditions: rootSoftGoalConditions,
                                 parent: rootState, newStateFacts, actionGeneratedBy: consumableAction
                             );
-                            Doctor?.Log(DGUDoctor.LogLevel.Trace, $"Generated initial plan state {newState}");
+                            Doctor?.Log(DGUDoctor.LogLevel.Debug, $"Generated initial plan state {newState}");
                             states.Add(newState);
                         }
                     }
@@ -145,6 +155,7 @@ public class DGUPlanner : IDGUDoctorable {
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
     private async Task<DGUPlanState> SimulateActionExecution(DGUPlanState inputState, VirtualAction action) {
+        Doctor?.Log(DGUDoctor.LogLevel.Trace, $"      Simulating action: {action}");
         var newState = inputState.Fork();
         // collect all actions that lead to this state
         var predecessorActions = inputState.CollectPredecessorActions();
@@ -158,6 +169,7 @@ public class DGUPlanner : IDGUDoctorable {
 
                 // the world diff created by the action's effect
                 var actionEffectWorldDiff = new WorldDiff(effect.Change, correspondingFact, depth: 0);
+                Doctor?.Log(DGUDoctor.LogLevel.Trace, $"        Simulating effect: {effect}");
                 await SimulateWorldDiffsUntilEquilibrium(newState, effect, actionEffectWorldDiff);
             }
         }
