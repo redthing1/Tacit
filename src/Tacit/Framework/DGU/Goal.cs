@@ -36,6 +36,10 @@ public abstract class Goal {
     public abstract long Weight { get; }
 
     public Drive Drive { get; init; } = null!;
+    
+    /// <summary>
+    /// conditions specifying how to satisfy the goal
+    /// </summary>
     public List<IPartialCondition> Conditions { get; } = new();
     public List<GoalTrigger> RemovalTriggers { get; } = new();
 

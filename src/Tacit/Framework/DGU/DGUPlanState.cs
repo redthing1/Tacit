@@ -36,8 +36,8 @@ public class DGUPlanState : IForkable<DGUPlanState> {
         var ret = (DGUPlanState)MemberwiseClone();
         // deep copy
         ret.HypotheticalFacts = HypotheticalFacts.Fork();
-        ret.HardGoalConditions = new List<IPartialCondition>(HardGoalConditions);
-        ret.SoftGoalConditions = new List<IPartialCondition>(SoftGoalConditions);
+        if (HardGoalConditions != null) ret.HardGoalConditions = new List<IPartialCondition>(HardGoalConditions);
+        if (SoftGoalConditions != null) ret.SoftGoalConditions = new List<IPartialCondition>(SoftGoalConditions);
         return ret;
     }
 
