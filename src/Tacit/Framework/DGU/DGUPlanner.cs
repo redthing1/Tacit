@@ -202,32 +202,6 @@ public class DGUPlanner {
         // if we got here, equilibrium has been reached
     }
 
-    // /// <summary>
-    // /// maps an action with preconditions and effects that is not yet associated with any facts
-    // /// </summary>
-    // /// <param name="unmappedAction"></param>
-    // /// <param name="factsBefore"></param>
-    // /// <returns></returns>
-    // /// <exception cref="NotImplementedException"></exception>
-    // private VirtualAction MapKeysToFacts(VirtualAction unmappedAction, FactMemory factsBefore) {
-    //     var mappedAction = unmappedAction.Fork();
-    //     foreach (var precondition in mappedAction.Preconditions) {
-    //         // map each precondition to its relevant fact
-    //         // then match each effect of the action to its relevant fact
-    //         // provides each precondition with the fact needed to evaluate if the precondition is satisfied
-    //         // provides each effect with the fact needed to know which fact the effect will change
-    //         
-    //         // find the fact that matches the change key of the precondition
-    //         var matchingFact = factsBefore.GetFactFromChangeKey(precondition.SatisfactionCriterion);
-    //     }
-    //
-    //     foreach (var effect in mappedAction.Effects) {
-    //         var matchingFact = factsBefore.GetFactFromChangeKey(effect.Change);
-    //     }
-    //     
-    //     return mappedAction;
-    // }
-
     private IEnumerable<VirtualAction> FindApplicableActions(IPartialCondition condition, List<VirtualAction> consumableActions) {
         var candidates = new List<VirtualAction>();
         foreach (var action in consumableActions) {
@@ -239,18 +213,6 @@ public class DGUPlanner {
                 }
             }
         }
-        // var applicableActions = new List<VirtualAction>();
-        // foreach (var environmentAction in allActions) {
-        //     // see if the environment action overlaps with the candidates
-        //     
-        // }
-        // ???
-
-        // var results = new List<VirtualAction>();
-        // foreach (var candidate in candidates) {
-        //     var action = new VirtualAction(candidate.Name, candidate.Preconditions, candidate.Effects);
-        // }
-        // ???
 
         return candidates;
     }
