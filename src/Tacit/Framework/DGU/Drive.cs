@@ -49,6 +49,8 @@ public abstract class Drive {
     public virtual async Task Update(long time, FactMemory memory) {
         // evaluate current satisfaction
         CurrentSatisfaction = await Evaluate(memory);
+        
+        Agent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"{GetType().Name}::Update: CurrentSatisfaction: {CurrentSatisfaction}");
 
         // check generators to see if more goals should be created
         // var createdGoals = await GoalGenerator.GenerateGoals(memory);
@@ -57,18 +59,21 @@ public abstract class Drive {
             var createdGoals = await generator.GenerateGoals(memory);
             if (createdGoals.Length <= 0) continue;
             Agent.Doctor?.Log(DGUDoctor.LogLevel.Debug,
-                $"{GetType().Name}::Update: {generator.GetType().Name} created goals: {createdGoals.Length}");
+                $"  {generator.GetType().Name} created goals: {createdGoals.Length}");
             newGoals.AddRange(createdGoals);
         }
 
         // evaluate the newly created goals, then add them to the list of current goals
         foreach (var goal in newGoals) {
             await goal.Update(time, memory);
+            // add it to both the drive's goal list and the agent's goal list
             CurrentGoals.Add(goal);
+            Agent.Goals.Add(goal);
         }
     }
 
     public virtual async Task<float> Evaluate(FactMemory memory) {
+        if (CurrentGoals.Count == 0) return 1; // if there are no goals, we are satisfied
         float totalSatisfaction = 0;
         long totalWeight = 0;
         foreach (var goal in CurrentGoals) {

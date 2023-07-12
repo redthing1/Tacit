@@ -30,6 +30,27 @@ public class BarfightGame : SimpleGame {
         await base.Update();
         _log.Info($"Step {Steps}");
 
+        // update action list for everyone
+        foreach (var personEntity in ECS.GetEntitiesWithComponent<DrunkPersonMind>()) {
+            var personMind = personEntity.GetComponent<DrunkPersonMind>();
+            personMind.ConsumableActions.Clear();
+            personMind.SuppliedActions.Clear();
+            // drink alcohol self -> self
+            personMind.ConsumableActions.Add(new DrinkAlcoholAction(personMind, personMind));
+            // punch someone self -> others
+            foreach (var otherEntity in ECS.GetEntitiesWithComponent<DrunkPersonMind>()) {
+                var otherMind = otherEntity.GetComponent<DrunkPersonMind>();
+                if (otherEntity == personEntity) {
+                    // we supply a getting punched action
+                    personMind.SuppliedActions.Add(new ThrowPunchAction(personMind, otherMind));
+                }
+                else {
+                    // and we can consume punch action on others
+                    personMind.ConsumableActions.Add(new ThrowPunchAction(otherMind, personMind));
+                }
+            }
+        }
+
         foreach (var personEntity in ECS.GetEntitiesWithComponent<DrunkPersonMind>()) {
             var personMind = personEntity.GetComponent<DrunkPersonMind>();
             await personMind.Update(Steps);

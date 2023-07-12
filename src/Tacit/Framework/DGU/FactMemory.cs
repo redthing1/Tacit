@@ -73,7 +73,7 @@ public class FactMemory : IForkable<FactMemory> {
     public IFact ExpectFact(string subjectId, string attribute) {
         var matchingFact = _facts.FindLast(f => f.SubjectId == subjectId && f.Attribute == attribute);
         if (matchingFact == null) {
-            throw new Exception($"Fact not found: {subjectId} {attribute}");
+            throw new Exception($"Fact not found: {subjectId}::{attribute}");
         }
         return matchingFact;
     }

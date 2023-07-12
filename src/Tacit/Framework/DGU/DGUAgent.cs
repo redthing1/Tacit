@@ -108,7 +108,7 @@ public abstract class DGUAgent : ISmartObject, IForkable<DGUAgent>, IDGUDoctorab
     }
 
     private async Task UpdateGoals(long time) {
-        foreach (var goal in Goals) {
+        foreach (var goal in Goals.ToArray()) {
             await goal.Update(time, FactMemory);
 
             // check removal triggers

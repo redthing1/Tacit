@@ -61,6 +61,8 @@ class BeatUpOthersGoalGenerator : GoalGenerator {
             if (person.Id == Drive.Agent.Id) continue; // skip self
             // see if we already have a goal to beat up this person
             if (GoalExists(x => x is BeatUpGoal beatUpGoal && beatUpGoal.Target == person)) continue;
+            // create a goal to beat up this person
+            goals.Add(new BeatUpGoal(Drive, person));
         }
         
         return Task.FromResult(goals.ToArray());

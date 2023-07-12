@@ -7,9 +7,7 @@ public class DrunkPersonMind : DGUAgent {
         Sensors.Add(new MyStatsSensor(this));
         Sensors.Add(new EnvironmentObjectsSensor(this));
             
-        Drives.Add(new StayAlive(this));
-        Drives.Add(new BeatUpOthers(this));
-
-        ConsumableActions.Add(new DrinkAlcoholAction(supplier: this, consumer: this));
+        Drives.Add(new StayAliveDrive(this));
+        Drives.Add(new BeatUpOthersDrive(this));
     }
 }

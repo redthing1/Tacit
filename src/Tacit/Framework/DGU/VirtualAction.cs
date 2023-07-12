@@ -9,7 +9,7 @@ namespace Tacit.Framework.DGU;
 public record AllEnvironmentActions(List<VirtualAction> Actions);
 
 public abstract class VirtualAction {
-    public abstract string Name { get; }
+    public virtual string Name => GetType().Name;
     // public abstract long Weight { get; }
 
     public List<IPartialCondition> Preconditions { get; private set; } = new();

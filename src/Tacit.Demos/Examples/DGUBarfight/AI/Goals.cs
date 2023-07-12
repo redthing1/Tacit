@@ -69,7 +69,7 @@ class BeatUpGoal : Goal {
         // check the health of the target
         var healthFact = memory.ExpectFact<float>(Target.Id, Constants.Facts.PERSON_HEALTH);
         var healthPercent = Mathf.Clamp01(healthFact.Value / Constants.Values.HEALTH_MAX);
-        // var ret = Mathf.Pow(healthPercent, 1.5f);
-        return Task.FromResult(healthPercent);
+        var ret = 1f - healthPercent;
+        return Task.FromResult(ret);
     }
 }

@@ -14,15 +14,27 @@ public class MyStatsSensor : Sensor {
     public override Task Update(long time, FactMemory memory) {
         base.Update(time, memory);
 
-        var myEntity = Environment.Game.ECS.GetEntitiesWithComponent<DrunkPersonMind>()
-            .Single(x => x.GetComponent<DrunkPersonMind>() == Agent);
-        var myStats = myEntity.GetComponent<DrunkPersonStats>();
-
-        // create a fact for the agent's health
-        memory.AddFact(new Fact<float>(Agent, Constants.Facts.PERSON_HEALTH, myStats.Health, time));
-
-        // create a fact for the agent's drunkenness
-        memory.AddFact(new Fact<float>(Agent, Constants.Facts.PERSON_DRUNKENNESS, myStats.Drunkenness, time));
+        // var myEntity = Environment.Game.ECS.GetEntitiesWithComponent<DrunkPersonMind>()
+        //     .Single(x => x.GetComponent<DrunkPersonMind>() == Agent);
+        // var myStats = myEntity.GetComponent<DrunkPersonStats>();
+        //
+        // // create a fact for the agent's health
+        // memory.AddFact(new Fact<float>(Agent, Constants.Facts.PERSON_HEALTH, myStats.Health, time));
+        //
+        // // create a fact for the agent's drunkenness
+        // memory.AddFact(new Fact<float>(Agent, Constants.Facts.PERSON_DRUNKENNESS, myStats.Drunkenness, time));
+        var allPeopleEntities = Environment.Game.ECS.GetEntitiesWithComponent<DrunkPersonMind>();
+        
+        foreach (var personEntity in allPeopleEntities) {
+            var personMind = personEntity.GetComponent<DrunkPersonMind>();
+            var personStats = personEntity.GetComponent<DrunkPersonStats>();
+            
+            // create a fact for the agent's health
+            memory.AddFact(new Fact<float>(personMind, Constants.Facts.PERSON_HEALTH, personStats.Health, time));
+            
+            // create a fact for the agent's drunkenness
+            memory.AddFact(new Fact<float>(personMind, Constants.Facts.PERSON_DRUNKENNESS, personStats.Drunkenness, time));
+        }
 
         return Task.CompletedTask;
     }
