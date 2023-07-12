@@ -19,7 +19,7 @@ public class HealMyselfGoal : Goal {
 
     public override async Task<float> Evaluate(FactMemory memory) {
         var score = await ScoreHealthIsHigh(memory);
-        Drive.Agent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"{GetType().Name}::Evaluate: {score}");
+        // Drive.Agent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"{GetType().Name}::Evaluate: {score}");
         return score;
     }
 
@@ -45,7 +45,7 @@ public class SoberUpGoal : Goal {
 
     public override async Task<float> Evaluate(FactMemory memory) {
         var score = await ScoreDrunkennessIsLow(memory);
-        Drive.Agent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"{GetType().Name}::Evaluate: {score}");
+        // Drive.Agent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"{GetType().Name}::Evaluate: {score}");
         return score;
     }
 

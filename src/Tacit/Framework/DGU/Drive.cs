@@ -83,7 +83,7 @@ public abstract class Drive {
 
         if (totalWeight == 0) return 0;
         var score = totalSatisfaction / totalWeight;
-        Agent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"{GetType().Name}::Evaluate: {score}");
+        // Agent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"{GetType().Name}::Evaluate: {score}");
         return score;
     }
 }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Minlog;
 using Tacit.Demos.Examples.DGUBarfight.AI;
@@ -54,14 +53,13 @@ public class BarfightGame : SimpleGame {
         // update mind, get plan, and execute plan
         _log.Info($"Planning:");
         foreach (var personEntity in ECS.GetEntitiesWithComponent<DrunkPersonAgent>()) {
+            _log.Info($"  Person entity {personEntity.Name}");
             // update mind
             var personMind = personEntity.GetComponent<DrunkPersonAgent>();
             await personMind.Update(Steps);
             // run planner
             var planCtx = new DGUPlanner.PlanInvocationContext(Steps);
             var personPlan = await personMind.Planner!.Plan(planCtx);
-
-            _log.Info($"  Person entity {personEntity.Name}");
             _log.Info($"    Plan: {personPlan}");
 
             // execute plan
@@ -96,8 +94,7 @@ public class BarfightGame : SimpleGame {
                     // drink alcohol
                     var drinkerEntity = ((DrunkPersonAgent)drinkAlcoholAction.Supplier!).Entity!;
                     var drinkerStats = drinkerEntity.GetComponent<DrunkPersonStats>();
-                    var drinkVolume = 250; // 250 mL
-                    var drinkBac = DrinkCalculator.CalculateDrinkBAC(drinkVolume, drinkAlcoholAction.AlcoholStrength);
+                    var drinkBac = DrinkCalculator.CalculateDrinkBAC(Constants.Values.TYPICAL_GLASS_VOLUME, drinkAlcoholAction.AlcoholStrength);
                     drinkerStats.Drunkenness += drinkBac;
                     break;
                 case ThrowPunchAction throwPunchAction:

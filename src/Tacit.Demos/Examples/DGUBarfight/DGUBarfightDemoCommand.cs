@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using CliFx;
 using CliFx.Attributes;
@@ -17,6 +18,9 @@ public class DGUBarfightDemoCommand : ICommand {
     
     [CommandOption("steps", 's', Description = "Number of steps to run the simulation for")]
     public int Steps { get; set; } = 10;
+    
+    [CommandOption("interactive", 'i', Description = "Run the simulation in interactive mode")]
+    public bool Interactive { get; set; } = false;
 
     public DGUBarfightDemoCommand(Logger rootLog) {
         _rootLog = rootLog;
@@ -36,7 +40,18 @@ public class DGUBarfightDemoCommand : ICommand {
         game.AddPerson(bob);
         game.AddPerson(joe);
 
+        if (Interactive) {
+            _log.Info("Running game simulation in interactive mode");
+        }
+
         while (true) {
+            if (Interactive) {
+                var input = await console.Input.ReadLineAsync();
+                if (input == "q") {
+                    _log.Info("Stopping game simulation");
+                    break;
+                }
+            }
             var status = await game.Update();
             if (status != SimpleGame.Status.Continue) {
                 _log.Info($"Stopping game simulation with status: {status}");

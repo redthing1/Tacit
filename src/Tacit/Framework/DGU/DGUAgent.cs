@@ -5,8 +5,8 @@ using Tacit.Utils;
 namespace Tacit.Framework.DGU;
 
 public abstract class DGUAgent : ISmartObject, IForkable<DGUAgent>, IDGUDoctorable {
-    public virtual string Id { get; init; }
-    public virtual string? Name => null;
+    public string Id { get; init; }
+    public string? Name { get; init; }
     public AgentEnvironment Environment { get; }
     public FactMemory FactMemory { get; private set; }
     public List<Drive> Drives { get; } = new();

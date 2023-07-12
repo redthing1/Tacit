@@ -4,7 +4,8 @@ using Tacit.Framework.DGU;
 namespace Tacit.Demos.Examples.DGUBarfight.AI;
 
 public class DrunkPersonAgent : DGUAgent, IComponent {
-    public DrunkPersonAgent(string id, AgentEnvironment environment) : base(id, environment) {
+    public DrunkPersonAgent(string name, AgentEnvironment environment) : base(id: name, environment) {
+        Name = name;
         Sensors.Add(new MyStatsSensor(this));
         Sensors.Add(new EnvironmentObjectsSensor(this));
 
