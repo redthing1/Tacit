@@ -23,7 +23,7 @@ public class BarfightGame : SimpleGame {
     public void AddPerson(DrunkPersonMind personMind) {
         var entity = ECS.CreateEntity(personMind.Name ?? "person");
         entity.AddComponent(personMind);
-        entity.AddComponent(new DrunkPersonStats(100, 0));
+        entity.AddComponent(new DrunkPersonStats(Constants.Values.HEALTH_MAX, 0));
     }
 
     public override async Task<Status> Update() {

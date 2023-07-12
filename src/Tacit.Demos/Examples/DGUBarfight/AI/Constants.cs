@@ -12,6 +12,7 @@ public class Constants {
         // HEALTH values
         public const float HEALTH_LOW = 0.4f; // low health
         public const float HEALTH_MAX = 1f; // max health
+        public const float PUNCH_DAMAGE = 0.1f; // damage from a punch
         // BAC values
         public const float DRUNKENNESS_IMPAIRED = 0.25f; // impaired
         public const float DANGEROUS_DRUNKENNESS = 0.4f; // getting close to death

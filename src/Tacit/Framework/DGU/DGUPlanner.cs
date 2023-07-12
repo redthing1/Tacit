@@ -23,8 +23,7 @@ public class DGUPlanner {
             return sb.ToString();
         }
     }
-
-    private int _idCounter = 0;
+    
     public PlannerConfig Config { get; }
     public DGUAgent RootAgent { get; }
 
@@ -32,8 +31,6 @@ public class DGUPlanner {
         Config = config;
         RootAgent = rootAgent;
     }
-
-    private int GetNextId() => _idCounter++;
 
     public async Task<PlanResult?> Plan(PlanInvocationContext context) {
         RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Info, $"Planning for agent {RootAgent}");
@@ -68,8 +65,9 @@ public class DGUPlanner {
             var unsatisfiedPreconditions = await bestPlanState.GetUnsatisfiedPreconditions();
             if (!unsatisfiedPreconditions.Any()) {
                 // if there are no unsatisfied preconditions, then we have found a plan
+                var planActions = bestPlanState.CollectPredecessorActions();
                 RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Info, $"  No unsatisfied preconditions. Found plan: {bestPlanState}");
-                return new PlanResult(bestPlanState.CollectPredecessorActions());
+                return new PlanResult(planActions);
             }
 
             // begin generating successor plan states
@@ -108,7 +106,7 @@ public class DGUPlanner {
         return null;
     }
 
-    private Task<List<DGUPlanState>> GenerateInitialPlanStates() {
+    private async Task<List<DGUPlanState>> GenerateInitialPlanStates() {
         RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Info, $"Generating initial plan states for agent {RootAgent}");
 
         var states = new List<DGUPlanState>();
@@ -118,7 +116,7 @@ public class DGUPlanner {
         RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"  Generating root plan state");
         var rootSoftGoalConditions = agent.Goals.SelectMany(x => x.Conditions).ToList();
         RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"    Root soft goal conditions: {rootSoftGoalConditions.Count}");
-        var rootState = new DGUPlanState(GetNextId(), hardGoalConditions: null, softGoalConditions: rootSoftGoalConditions, parent: null, agent.FactMemory, actionGeneratedBy: null);
+        var rootState = new DGUPlanState(id: -1, hardGoalConditions: null, softGoalConditions: rootSoftGoalConditions, parent: null, agent.FactMemory, actionGeneratedBy: null);
         states.Add(rootState);
 
         // for each consumable action, generate a plan state
@@ -137,23 +135,26 @@ public class DGUPlanner {
                             RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"          Action effect {effect} is applicable to goal condition {condition}");
                             // this effect would satisfy a goal condition
                             // create a new plan state
-                            var hardGoalConditions = new List<IPartialCondition> {
-                                condition
-                            };
-                            var newStateFacts = rootState.HypotheticalFacts.Fork();
-                            var newState = new DGUPlanState(
-                                GetNextId(), hardGoalConditions: hardGoalConditions, softGoalConditions: rootSoftGoalConditions,
-                                parent: rootState, newStateFacts, actionGeneratedBy: consumableAction
-                            );
-                            RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"            Generated plan state: {newState}");
-                            states.Add(newState);
+                            // var hardGoalConditions = new List<IPartialCondition> {
+                            //     condition
+                            // };
+                            // var newStateFacts = rootState.HypotheticalFacts.Fork();
+                            // var newState = new DGUPlanState(
+                            //     GetNextId(), hardGoalConditions: hardGoalConditions, softGoalConditions: rootSoftGoalConditions,
+                            //     parent: rootState, newStateFacts, actionGeneratedBy: consumableAction
+                            // );
+                            // RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"            Generated plan state: {newState}");
+                            // states.Add(newState);
+                            var successorState = await SimulateActionExecution(rootState, consumableAction);
+                            RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"            Generated plan state: {successorState}");
+                            states.Add(successorState);
                         }
                     }
                 }
             }
         }
 
-        return Task.FromResult(states);
+        return states;
     }
 
     /// <summary>
@@ -165,9 +166,11 @@ public class DGUPlanner {
     /// <exception cref="NotImplementedException"></exception>
     private async Task<DGUPlanState> SimulateActionExecution(DGUPlanState inputState, VirtualAction action) {
         RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"      Simulating action: {action}");
-        var newState = inputState.Fork();
+        // var newState = inputState.Fork();
+        // create a child state
+        var newState = inputState.CreateChildState(action);
         // collect all actions that lead to this state
-        var predecessorActions = inputState.CollectPredecessorActions();
+        var predecessorActions = newState.CollectPredecessorActions();
         // apply these actions in forward order
         foreach (var predecessorAction in predecessorActions) {
             // apply the effects of this single action
@@ -199,10 +202,11 @@ public class DGUPlanner {
             }
 
             // simulate this diff
-            var newDiffs = await effect.SimulateInWorld(diff);
+            var newDiffs = await effect.SimulateInWorld(diff, newState.HypotheticalFacts);
 
-            // add new diffs to queue
+            // apply the fact changes from the diffs, then enqueue them for simulation
             foreach (var newDiff in newDiffs) {
+                newState.HypotheticalFacts.UpdateFact(newDiff.Fact);
                 diffQueue.Enqueue(newDiff);
             }
         }

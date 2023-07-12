@@ -14,7 +14,13 @@ public abstract class VirtualAction {
 
     public List<IPartialCondition> Preconditions { get; private set; } = new();
     public List<VirtualEffect> Effects { get; private set; } = new();
+    /// <summary>
+    /// the object the action is performed on
+    /// </summary>
     public ISmartObject? Supplier { get; init; }
+    /// <summary>
+    /// the agent that performs the action
+    /// </summary>
     public ISmartObject? Consumer { get; init; }
 
     protected VirtualAction(ISmartObject? supplier, ISmartObject? consumer) {

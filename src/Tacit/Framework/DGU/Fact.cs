@@ -22,11 +22,15 @@ public enum FactChangeType {
     MustNotExist,
 }
 
-public record FactChange(string SubjectId, string Attribute, FactChangeType Change) {
+public record FactChange(string SubjectId, string Attribute, FactChangeType ChangeType) {
     public virtual bool Equals(FactChange? other) {
         if (other is null) {
             return false;
         }
-        return SubjectId == other.SubjectId && Attribute == other.Attribute && Change == other.Change;
+        return SubjectId == other.SubjectId && Attribute == other.Attribute && ChangeType == other.ChangeType;
+    }
+
+    public override string ToString() {
+        return $"{SubjectId}::{Attribute} {ChangeType}";
     }
 }

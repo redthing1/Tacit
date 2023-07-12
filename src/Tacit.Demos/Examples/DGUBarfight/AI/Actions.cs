@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Tacit.Framework.DGU;
@@ -12,7 +13,7 @@ public class GetMoreDrunkEffect : VirtualEffect {
     ) {
     }
 
-    public override Task<List<WorldDiff>> SimulateInWorld(WorldDiff diff) {
+    public override Task<List<WorldDiff>> SimulateInWorld(WorldDiff diff, IReadOnlyFactMemory memory) {
         // nothing much will happen
         return Task.FromResult(new List<WorldDiff>());
     }
@@ -25,7 +26,7 @@ public class GetLessDrunkEffect : VirtualEffect {
     ) {
     }
 
-    public override Task<List<WorldDiff>> SimulateInWorld(WorldDiff diff) {
+    public override Task<List<WorldDiff>> SimulateInWorld(WorldDiff diff, IReadOnlyFactMemory memory) {
         // nothing much will happen
         return Task.FromResult(new List<WorldDiff>());
     }
@@ -43,10 +44,36 @@ public class PunchSomeoneEffect : VirtualEffect {
         Consumer = consumer;
     }
 
-    public override Task<List<WorldDiff>> SimulateInWorld(WorldDiff diff) {
+    public override Task<List<WorldDiff>> SimulateInWorld(WorldDiff diff, IReadOnlyFactMemory memory) {
         // if we punch someone, they will get hurt, and probably punch back
-        // TODO: implement this
-        return Task.FromResult(new List<WorldDiff>());
+        var outDiffs = new List<WorldDiff>();
+        
+        // if this diff is the supplier's health decreasing, then the supplier will also punch back at us (the consumer)
+        if (diff.depth == 0) { // the seed diff
+            // ensure
+            if (diff.Fact.SubjectId != Supplier.Id) {
+                throw new InvalidOperationException($"PunchSomeoneEffect: diff.Fact.SubjectId != Supplier.Id");
+            }
+            // first, decrease the supplier's health cause they were punched
+            var supplierHealthFact = diff.Fact as Fact<float>;
+            var newSupplierHealth = Mathf.Clamp(supplierHealthFact!.Value - Constants.Values.PUNCH_DAMAGE, 0, Constants.Values.HEALTH_MAX);
+            var newSupplierHealthFact = new Fact<float>(Supplier, Constants.Facts.PERSON_HEALTH, newSupplierHealth,
+                supplierHealthFact.Time + 1);
+            var supplierHealthDecrease =
+                new FactChange(Supplier.Id, Constants.Facts.PERSON_HEALTH, FactChangeType.Decrease);
+            outDiffs.Add(new WorldDiff(supplierHealthDecrease, newSupplierHealthFact, diff.depth + 1));
+            
+            // now, the supplier will punch back at us
+            var consumerHealthDecrease =
+                new FactChange(Consumer.Id, Constants.Facts.PERSON_HEALTH, FactChangeType.Decrease);
+            var consumerHealthFact = memory.ExpectFact<float>(Consumer.Id, Constants.Facts.PERSON_HEALTH);
+            var newConsumerHealth = Mathf.Clamp(consumerHealthFact.Value - Constants.Values.PUNCH_DAMAGE, 0, Constants.Values.HEALTH_MAX);
+            var newConsumerHealthFact = new Fact<float>(Consumer, Constants.Facts.PERSON_HEALTH, newConsumerHealth,
+                consumerHealthFact.Time + 1);
+            outDiffs.Add(new WorldDiff(consumerHealthDecrease, newConsumerHealthFact, diff.depth + 1));
+        }
+        
+        return Task.FromResult(outDiffs);
     }
 }
 
