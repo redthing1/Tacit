@@ -60,6 +60,7 @@ public class DGUPlanState : IForkable<DGUPlanState> {
         if (HardGoalConditions != null) conditions.AddRange(HardGoalConditions);
         if (SoftGoalConditions != null) conditions.AddRange(SoftGoalConditions);
 
+        // TODO: figure out what to do with hard vs. soft conditions
         var unsatisfiedConditions = new List<IPartialCondition>();
         foreach (var condition in conditions) {
             var satisfaction = await condition.Evaluate(HypotheticalFacts);

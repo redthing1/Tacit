@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Tacit.Framework.DGU;
 
 public class DGUPlanner {
-    public record PlannerConfig(long MaxSimulationDepth = 16);
+    public record PlannerConfig(long MaxSearchStates = 8, long MaxSimulationDepth = 16);
 
     public record PlanInvocationContext(long time);
 
@@ -42,6 +42,8 @@ public class DGUPlanner {
         var initialFacts = RootAgent.FactMemory;
         RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"  Initial plan states: {planStates.Count}");
 
+        var searchedStateCount = 0;
+
         while (planStates.Count > 0) {
             // evaluate plan states and take the highest scoring one
             foreach (var planState in planStates) {
@@ -54,6 +56,12 @@ public class DGUPlanner {
 
             // remove best plan state from list
             planStates.Remove(bestPlanState);
+            searchedStateCount++;
+            
+            if (searchedStateCount > Config.MaxSearchStates) {
+                RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Info, $"  Reached max search states. Failed to find a plan.");
+                return null;
+            }
 
             RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"  Selected best plan state: {bestPlanState}");
 

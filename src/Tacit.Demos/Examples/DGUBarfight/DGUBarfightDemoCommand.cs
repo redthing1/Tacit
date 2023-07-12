@@ -14,6 +14,9 @@ namespace Tacit.Demos.Examples.DGUBarfight;
 public class DGUBarfightDemoCommand : ICommand {
     private readonly Logger _rootLog;
     private readonly ILogger _log;
+    
+    [CommandOption("steps", 's', Description = "Number of steps to run the simulation for")]
+    public int Steps { get; set; } = 10;
 
     public DGUBarfightDemoCommand(Logger rootLog) {
         _rootLog = rootLog;
@@ -37,6 +40,10 @@ public class DGUBarfightDemoCommand : ICommand {
             var status = await game.Update();
             if (status != SimpleGame.Status.Continue) {
                 _log.Info($"Stopping game simulation with status: {status}");
+                break;
+            }
+            if (Steps > 0 && game.Steps >= Steps) {
+                _log.Info($"Stopping game simulation after {Steps} steps");
                 break;
             }
         }
