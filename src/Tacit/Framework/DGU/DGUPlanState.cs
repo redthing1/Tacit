@@ -69,7 +69,7 @@ public class DGUPlanState {
     }
 
     public override string ToString() {
-        return base.ToString();
+        return $"{GetType().Name}(id={Id}, score={Score})";
     }
 
     // public DGUPlanState Fork() {

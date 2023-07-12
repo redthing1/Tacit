@@ -50,7 +50,7 @@ public abstract class Drive {
         // evaluate current satisfaction
         CurrentSatisfaction = await Evaluate(memory);
         
-        Agent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"{GetType().Name}::Update: CurrentSatisfaction: {CurrentSatisfaction}");
+        Agent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"drive({GetType().Name})::Update: CurrentSatisfaction: {CurrentSatisfaction}");
 
         // check generators to see if more goals should be created
         // var createdGoals = await GoalGenerator.GenerateGoals(memory);

@@ -66,7 +66,8 @@ public class DGUPlanner {
             if (!unsatisfiedPreconditions.Any()) {
                 // if there are no unsatisfied preconditions, then we have found a plan
                 var planActions = bestPlanState.CollectPredecessorActions();
-                RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Info, $"  No unsatisfied preconditions. Found plan: {bestPlanState}");
+                var prettyPlanActions = "[" + string.Join(", ", planActions) + "]";
+                RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Info, $"  No unsatisfied preconditions. Found plan: {prettyPlanActions} leading to {bestPlanState}");
                 return new PlanResult(planActions);
             }
 

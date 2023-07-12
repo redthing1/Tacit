@@ -52,7 +52,7 @@ public abstract class Goal {
     public virtual async Task Update(long time, FactMemory memory) {
         CurrentSatisfaction = await Evaluate(memory);
         
-        Drive.Agent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"{GetType().Name}::Update: CurrentSatisfaction: {CurrentSatisfaction}");
+        Drive.Agent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"goal({GetType().Name})::Update: CurrentSatisfaction: {CurrentSatisfaction}");
     }
 
     public abstract Task<float> Evaluate(FactMemory memory);

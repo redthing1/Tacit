@@ -37,4 +37,8 @@ public abstract class VirtualAction {
         ret.Effects = new List<VirtualEffect>(Effects);
         return ret;
     }
+
+    public override string ToString() {
+        return $"{Name}";
+    }
 }
