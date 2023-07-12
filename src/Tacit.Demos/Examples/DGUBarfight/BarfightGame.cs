@@ -12,6 +12,7 @@ namespace Tacit.Demos.Examples.DGUBarfight;
 
 public class BarfightGame : SimpleGame {
     private readonly ILogger _log;
+    private readonly Random _rng = new();
 
     public LameECS ECS { get; }
 
@@ -107,9 +108,21 @@ public class BarfightGame : SimpleGame {
                     var punchedStats = punchedEntity.GetComponent<DrunkPersonStats>();
                     var puncherEntity = ((DrunkPersonAgent)throwPunchAction.Consumer!).Entity!;
                     var puncherStats = puncherEntity.GetComponent<DrunkPersonStats>();
-                    // for now use fixed punch damage
-                    var punchDamage = Constants.Values.BASE_PUNCH_DAMAGE;
-                    punchedStats.Health -= punchDamage;
+                    // // for now use fixed punch damage
+                    // var punchDamage = Constants.Values.BASE_PUNCH_DAMAGE;
+                    // punchedStats.Health -= punchDamage;
+                    var punchIsHit = _rng.NextDouble() < Constants.Values.PUNCH_HIT_PROBABILITY;
+                    if (punchIsHit) {
+                        var punchDamage = Constants.Values.BASE_PUNCH_DAMAGE;
+                        punchedStats.Health -= punchDamage;
+                        _log.Info($"        Punch hit! {punchDamage} damage");
+                    }
+                    else {
+                        var whiffSelfDamage = Constants.Values.PUNCH_WHIFF_DAMAGE;
+                        puncherStats.Health -= whiffSelfDamage;
+                        _log.Info($"        Punch whiffed! {whiffSelfDamage} self damage");
+                    }
+
                     break;
                 default:
                     throw new Exception($"Unknown action type: {action.GetType()}");

@@ -25,5 +25,8 @@ public class Constants {
         public const float LIQUOR_ABV = 40; // liquor is about 40% alcohol
         public const float BASE_BREAD_BAC_REDUCTION = 0.01f; // bread reduces BAC somewhat
         public const float HEAL_FROM_DRINKING_GLASS = 0.25f; // drinking a glass of alcohol heals you a bit
+        
+        public const float PUNCH_HIT_PROBABILITY = 0.8f; // probability of a punch hitting
+        public const float PUNCH_WHIFF_DAMAGE = 0.05f; // damage taken to self if punch misses
     }
 }
