@@ -56,7 +56,7 @@ public class PunchSomeoneEffect : VirtualEffect {
             }
             // first, decrease the supplier's health cause they were punched
             var supplierHealthFact = diff.Fact as Fact<float>;
-            var newSupplierHealth = Mathf.Clamp(supplierHealthFact!.Value - Constants.Values.PUNCH_DAMAGE, 0, Constants.Values.HEALTH_MAX);
+            var newSupplierHealth = Mathf.Clamp(supplierHealthFact!.Value - Constants.Values.BASE_PUNCH_DAMAGE, 0, Constants.Values.HEALTH_MAX);
             var newSupplierHealthFact = new Fact<float>(Supplier, Constants.Facts.PERSON_HEALTH, newSupplierHealth,
                 supplierHealthFact.Time + 1);
             var supplierHealthDecrease =
@@ -67,7 +67,7 @@ public class PunchSomeoneEffect : VirtualEffect {
             var consumerHealthDecrease =
                 new FactChange(Consumer.Id, Constants.Facts.PERSON_HEALTH, FactChangeType.Decrease);
             var consumerHealthFact = memory.ExpectFact<float>(Consumer.Id, Constants.Facts.PERSON_HEALTH);
-            var newConsumerHealth = Mathf.Clamp(consumerHealthFact.Value - Constants.Values.PUNCH_DAMAGE, 0, Constants.Values.HEALTH_MAX);
+            var newConsumerHealth = Mathf.Clamp(consumerHealthFact.Value - Constants.Values.BASE_PUNCH_DAMAGE, 0, Constants.Values.HEALTH_MAX);
             var newConsumerHealthFact = new Fact<float>(Consumer, Constants.Facts.PERSON_HEALTH, newConsumerHealth,
                 consumerHealthFact.Time + 1);
             outDiffs.Add(new WorldDiff(consumerHealthDecrease, newConsumerHealthFact, diff.depth + 1));
@@ -78,14 +78,13 @@ public class PunchSomeoneEffect : VirtualEffect {
 }
 
 public class DrinkAlcoholAction : VirtualAction {
-    public DrinkAlcoholAction(ISmartObject supplier, ISmartObject consumer) : base(supplier, consumer) {
-        // // don't drink if way too drunk
-        // Preconditions.Add(new FuncPartialCondition(
-        //     new FactChange(supplier.Id, Constants.Facts.PERSON_DRUNKENNESS, FactChangeType.Decrease), async mem => {
-        //         var drunkennessFact = mem.ExpectFact<float>(supplier.Id, Constants.Facts.PERSON_DRUNKENNESS);
-        //         return Mathf.Map01Clamp01(drunkennessFact.Value, 0, Constants.Values.DANGEROUS_DRUNKENNESS);
-        //     }));
+    /// <summary>
+    /// the strength of the alcohol in this drink (in %ABV)
+    /// </summary>
+    public float AlcoholStrength { get; }
 
+    public DrinkAlcoholAction(ISmartObject supplier, ISmartObject consumer, float alcoholStrength) : base(supplier, consumer) {
+        AlcoholStrength = alcoholStrength;
         Effects.Add(new GetMoreDrunkEffect(supplier));
     }
 }

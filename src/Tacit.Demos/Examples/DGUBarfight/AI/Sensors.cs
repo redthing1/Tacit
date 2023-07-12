@@ -8,7 +8,7 @@ public class MyStatsSensor : Sensor {
     public MyStatsSensor(DGUAgent agent) : base(agent) {
     }
 
-    private new DrunkPersonMind Agent => (DrunkPersonMind)base.Agent;
+    private new DrunkPersonAgent Agent => (DrunkPersonAgent)base.Agent;
     private BarfightEnvironment Environment => (BarfightEnvironment)Agent.Environment;
 
     public override Task Update(long time, FactMemory memory) {
@@ -23,10 +23,10 @@ public class MyStatsSensor : Sensor {
         //
         // // create a fact for the agent's drunkenness
         // memory.AddFact(new Fact<float>(Agent, Constants.Facts.PERSON_DRUNKENNESS, myStats.Drunkenness, time));
-        var allPeopleEntities = Environment.Game.ECS.GetEntitiesWithComponent<DrunkPersonMind>();
+        var allPeopleEntities = Environment.Game.ECS.GetEntitiesWithComponent<DrunkPersonAgent>();
         
         foreach (var personEntity in allPeopleEntities) {
-            var personMind = personEntity.GetComponent<DrunkPersonMind>();
+            var personMind = personEntity.GetComponent<DrunkPersonAgent>();
             var personStats = personEntity.GetComponent<DrunkPersonStats>();
             
             // create a fact for the agent's health
@@ -50,9 +50,9 @@ public class EnvironmentObjectsSensor : Sensor {
         base.Update(time, memory);
 
         // create a fact for all objects in the environment
-        var allPeopleEntities = Environment.Game.ECS.GetEntitiesWithComponent<DrunkPersonMind>();
+        var allPeopleEntities = Environment.Game.ECS.GetEntitiesWithComponent<DrunkPersonAgent>();
         var allPeopleMinds = allPeopleEntities
-            .Select(x => x.GetComponent<DrunkPersonMind>())
+            .Select(x => x.GetComponent<DrunkPersonAgent>())
             .Cast<ISmartObject>()
             .ToArray();
         memory.AddFact(new Fact<ISmartObject[]>(Agent, Constants.Facts.ALL_PERSONS, allPeopleMinds, time));
