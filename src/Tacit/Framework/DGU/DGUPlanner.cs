@@ -119,6 +119,8 @@ public class DGUPlanner {
         RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"    Root soft goal conditions: {rootSoftGoalConditions.Count}");
         var rootState = new DGUPlanState(id: -1, hardGoalConditions: null, softGoalConditions: rootSoftGoalConditions, parent: null, agent.FactMemory, actionGeneratedBy: null);
         states.Add(rootState);
+        var rootStateScore = await RootAgent.EvaluatePlanState(rootState);
+        RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"    Root plan state score: {rootStateScore}");
 
         // for each consumable action, generate a plan state
         // we want the fact change to match the condition key of any goal
