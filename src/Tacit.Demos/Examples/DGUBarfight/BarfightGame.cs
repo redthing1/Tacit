@@ -6,6 +6,7 @@ using Tacit.Demos.Examples.DGUBarfight.AI;
 using Tacit.Demos.Util;
 using Tacit.Framework.DGU;
 using Tacit.Layers.Game;
+using Tacit.Primer;
 
 namespace Tacit.Demos.Examples.DGUBarfight;
 
@@ -74,7 +75,7 @@ public class BarfightGame : SimpleGame {
             var personStats = personEntity.GetComponent<DrunkPersonStats>()!;
             _log.Info($"    Person entity {personEntity.Name}:");
             _log.Info($"      Stats: {personStats}");
-            
+
             // check end conditions/death conditions
             if (personStats.Health <= 0) {
                 _log.Warn($"      Person entity {personEntity.Name} died!");
@@ -93,9 +94,12 @@ public class BarfightGame : SimpleGame {
                 case DrinkAlcoholAction drinkAlcoholAction:
                     // drink alcohol
                     var drinkerEntity = ((DrunkPersonAgent)drinkAlcoholAction.Supplier!).Entity!;
-                    var drinkerStats = drinkerEntity.GetComponent<DrunkPersonStats>();
-                    var drinkBac = DrinkCalculator.CalculateDrinkBAC(Constants.Values.TYPICAL_GLASS_VOLUME, drinkAlcoholAction.AlcoholStrength);
+                    var drinkerStats = drinkerEntity.GetComponent<DrunkPersonStats>()!;
+                    var drinkBac = DrinkCalculator.CalculateDrinkBAC(Constants.Values.TYPICAL_GLASS_VOLUME,
+                        drinkAlcoholAction.AlcoholStrength);
                     drinkerStats.Drunkenness += drinkBac;
+                    drinkerStats.Health = Mathf.Clamp(drinkerStats.Health + Constants.Values.HEAL_FROM_DRINKING_GLASS,
+                        0, Constants.Values.HEALTH_MAX);
                     break;
                 case ThrowPunchAction throwPunchAction:
                     // hurt the target
