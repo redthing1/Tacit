@@ -24,19 +24,6 @@ public abstract class GoalTrigger : ITrigger {
     public abstract Task<bool> Evaluate(FactMemory memory);
 }
 
-public abstract class GoalGeneratorTrigger : ITrigger {
-    public DGUAgent Agent { get; }
-    public Drive Drive { get; }
-    protected GoalGeneratorTrigger(DGUAgent agent, Drive drive) {
-        Agent = agent;
-        Drive = drive;
-    }
-    public bool GoalExists(Func<Goal, bool> predicate) {
-        return Drive.CurrentGoals.Any(predicate);
-    }
-    public abstract Task<bool> Evaluate(FactMemory memory);
-}
-
 /// <summary>
 /// a trigger that evaluates to true when the goal's satisfaction reaches a certain threshold
 /// </summary>

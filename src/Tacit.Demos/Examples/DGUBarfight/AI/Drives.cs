@@ -8,15 +8,16 @@ public class StayAlive : Drive {
 
     public StayAlive(DGUAgent agent) : base(agent) {
         // set up goal generators
-        GoalGenerator.TriggeredGoals.Add(
-            new GoalGenerator.TriggeredGoal(
-                new LowHealthTrigger(agent, this),
-                () => new HealGoal(this))
-        );
-        GoalGenerator.TriggeredGoals.Add(
-            new GoalGenerator.TriggeredGoal(
-                new HighDrunkennessTrigger(agent, this),
-                () => new SoberUpGoal(this))
-        );
+        GoalGenerators.Add(new HealingGoalGenerator(this));
+        GoalGenerators.Add(new SoberingGoalGenerator(this));
+    }
+}
+
+public class BeatUpOthers : Drive {
+    public override long Weight { get; } = 2;
+
+    public BeatUpOthers(DGUAgent agent) : base(agent) {
+        // set up goal generators
+        GoalGenerators.Add(new BeatUpOthersGoalGenerator(this));
     }
 }

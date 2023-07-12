@@ -24,11 +24,14 @@ public class DGUBarfightDemoCommand : ICommand {
         var game = new BarfightGame(_rootLog);
 
         // create one person, and attach a doctor
-        var person = new DrunkPerson("Bob", new BarfightEnvironment(game));
-        person.AttachDoctor(new MinlogDGUDoctor(_rootLog));
-        var planner = person.AttachPlanner(new DGUPlanner(new DGUPlanner.PlannerConfig(), person));
-        planner.AttachDoctor(new MinlogDGUDoctor(_rootLog));
-        game.AddPerson(person);
+        var bob = new DrunkPersonMind("Bob", new BarfightEnvironment(game));
+        bob.AttachDoctor(new MinlogDGUDoctor(_rootLog));
+        bob.AttachPlanner(new DGUPlanner(new DGUPlanner.PlannerConfig(), bob));
+        var joe = new DrunkPersonMind("Joe", new BarfightEnvironment(game));
+        // joe.AttachDoctor(new MinlogDGUDoctor(_rootLog));
+        joe.AttachPlanner(new DGUPlanner(new DGUPlanner.PlannerConfig(), joe));
+        game.AddPerson(bob);
+        game.AddPerson(joe);
 
         while (true) {
             var status = await game.Update();

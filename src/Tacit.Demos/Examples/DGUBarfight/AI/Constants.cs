@@ -4,9 +4,14 @@ public class Constants {
     public class Facts {
         public const string PERSON_HEALTH = "health";
         public const string PERSON_DRUNKENNESS = "drunkenness";
+        
+        public const string ALL_PERSONS = "all_persons";
     }
 
     public class Values {
+        // HEALTH values
+        public const float HEALTH_LOW = 0.4f; // low health
+        public const float HEALTH_MAX = 1f; // max health
         // BAC values
         public const float DANGEROUS_DRUNKENNESS = 0.4f; // getting close to death
         public const float SOBER_ENOUGH = 0.08f; // sober enough to drive

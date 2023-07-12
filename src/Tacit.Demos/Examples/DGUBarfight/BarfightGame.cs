@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Minlog;
 using Tacit.Demos.Examples.DGUBarfight.AI;
+using Tacit.Demos.Util;
 using Tacit.Framework.DGU;
 using Tacit.Layers.Game;
 
@@ -11,29 +12,30 @@ public record DrunkPersonStats(float Health, float Drunkenness);
 
 public class BarfightGame : SimpleGame {
     private readonly ILogger _log;
-    private readonly List<DrunkPerson> _people = new();
 
-    public Dictionary<DrunkPerson, DrunkPersonStats> PersonStatsMap { get; } = new();
+    public LameECS ECS { get; }
 
     public BarfightGame(Logger log) {
         _log = log.For<BarfightGame>();
+        ECS = new LameECS();
     }
 
-    public void AddPerson(DrunkPerson person) {
-        _people.Add(person);
-        PersonStatsMap.Add(person, new DrunkPersonStats(100, 0));
+    public void AddPerson(DrunkPersonMind personMind) {
+        var entity = ECS.CreateEntity(personMind.Name ?? "person");
+        entity.AddComponent(personMind);
+        entity.AddComponent(new DrunkPersonStats(100, 0));
     }
 
     public override async Task<Status> Update() {
         await base.Update();
         _log.Info($"Step {Steps}");
 
-        // update all the people
-        foreach (var person in _people) {
-            await person.Update(Steps);
+        foreach (var personEntity in ECS.GetEntitiesWithComponent<DrunkPersonMind>()) {
+            var personMind = personEntity.GetComponent<DrunkPersonMind>();
+            await personMind.Update(Steps);
             var planCtx = new DGUPlanner.PlanInvocationContext(Steps);
-            var personPlan = await person.Planner!.Plan(planCtx);
-            _log.Info($"  Person {person.Id} plan: {personPlan}");
+            var personPlan = await personMind.Planner!.Plan(planCtx);
+            _log.Info($"  Person {personMind.Id} plan: {personPlan}");
         }
 
         return Status.Continue;

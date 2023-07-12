@@ -4,14 +4,18 @@ using Tacit.Primer;
 
 namespace Tacit.Demos.Examples.DGUBarfight.AI;
 
-public class HealGoal : Goal {
-    public HealGoal(Drive drive) : base(drive) {
+public class HealMyselfGoal : Goal {
+    public HealMyselfGoal(Drive drive) : base(drive) {
         Conditions.Add(
-            new FuncPartialCondition(new FactChange(Drive.Agent.Id, Constants.Facts.PERSON_HEALTH, FactChangeType.Increase), ScoreHealthIsHigh)
+            new FuncPartialCondition(
+                new FactChange(Drive.Agent.Id, Constants.Facts.PERSON_HEALTH, FactChangeType.Increase),
+                ScoreHealthIsHigh)
         );
         RemovalTriggers.Add(new GoalTriggerRemoveCompletedGoal(this));
     }
-    public override long Weight => 10;
+
+    public override long Weight => 20;
+
     public override async Task<float> Evaluate(FactMemory memory) {
         var score = await ScoreHealthIsHigh(memory);
         Drive.Agent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"{GetType().Name}::Evaluate: {score}");
@@ -28,11 +32,15 @@ public class HealGoal : Goal {
 public class SoberUpGoal : Goal {
     public SoberUpGoal(Drive drive) : base(drive) {
         Conditions.Add(
-            new FuncPartialCondition(new FactChange(Drive.Agent.Id, Constants.Facts.PERSON_DRUNKENNESS, FactChangeType.Decrease), ScoreDrunkennessIsLow)
+            new FuncPartialCondition(
+                new FactChange(Drive.Agent.Id, Constants.Facts.PERSON_DRUNKENNESS, FactChangeType.Decrease),
+                ScoreDrunkennessIsLow)
         );
         RemovalTriggers.Add(new GoalTriggerRemoveCompletedGoal(this));
     }
-    public override long Weight => 10;
+
+    public override long Weight => 20;
+
     public override async Task<float> Evaluate(FactMemory memory) {
         var score = await ScoreDrunkennessIsLow(memory);
         Drive.Agent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"{GetType().Name}::Evaluate: {score}");
@@ -41,7 +49,27 @@ public class SoberUpGoal : Goal {
 
     private Task<float> ScoreDrunkennessIsLow(FactMemory memory) {
         var drunkennessFact = memory.ExpectFact<float>(Drive.Agent.Id, Constants.Facts.PERSON_DRUNKENNESS);
-        var ret = Mathf.Clamp01(1 - drunkennessFact.Value / 0.9f);
+        var scaledDrunkenness = Mathf.Map01Clamp01(drunkennessFact.Value, Constants.Values.SOBER_ENOUGH,
+            Constants.Values.DANGEROUS_DRUNKENNESS);
+        var ret = 1f - scaledDrunkenness;
         return Task.FromResult(ret);
+    }
+}
+
+class BeatUpGoal : Goal {
+    public ISmartObject Target { get; }
+    public override long Weight => 10;
+
+    public BeatUpGoal(Drive drive, ISmartObject target) : base(drive) {
+        Target = target;
+        RemovalTriggers.Add(new GoalTriggerRemoveCompletedGoal(this));
+    }
+
+    public override Task<float> Evaluate(FactMemory memory) {
+        // check the health of the target
+        var healthFact = memory.ExpectFact<float>(Target.Id, Constants.Facts.PERSON_HEALTH);
+        var healthPercent = Mathf.Clamp01(healthFact.Value / Constants.Values.HEALTH_MAX);
+        // var ret = Mathf.Pow(healthPercent, 1.5f);
+        return Task.FromResult(healthPercent);
     }
 }

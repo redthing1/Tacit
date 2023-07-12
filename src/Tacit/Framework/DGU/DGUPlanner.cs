@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Tacit.Framework.DGU;
 
-public class DGUPlanner : IDGUDoctorable {
+public class DGUPlanner {
     public record PlannerConfig(long MaxSimulationDepth = 16);
 
     public record PlanInvocationContext(long time);
@@ -27,26 +27,20 @@ public class DGUPlanner : IDGUDoctorable {
     private int _idCounter = 0;
     public PlannerConfig Config { get; }
     public DGUAgent RootAgent { get; }
-    public DGUDoctor? Doctor { get; set; }
 
     public DGUPlanner(PlannerConfig config, DGUAgent rootAgent) {
         Config = config;
         RootAgent = rootAgent;
     }
 
-    public void AttachDoctor(DGUDoctor doctor) {
-        doctor.OnAttach(this);
-        Doctor = doctor;
-    }
-
     private int GetNextId() => _idCounter++;
 
     public async Task<PlanResult?> Plan(PlanInvocationContext context) {
-        Doctor?.Log(DGUDoctor.LogLevel.Info, $"Planning for agent {RootAgent}");
+        RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Info, $"Planning for agent {RootAgent}");
         // get seed plan states
         var planStates = await GenerateInitialPlanStates();
         var initialFacts = RootAgent.FactMemory;
-        Doctor?.Log(DGUDoctor.LogLevel.Debug, $"  Initial plan states: {planStates.Count}");
+        RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"  Initial plan states: {planStates.Count}");
 
         while (planStates.Count > 0) {
             // evaluate plan states and take the highest scoring one
@@ -61,34 +55,34 @@ public class DGUPlanner : IDGUDoctorable {
             // remove best plan state from list
             planStates.Remove(bestPlanState);
 
-            Doctor?.Log(DGUDoctor.LogLevel.Debug, $"  Selected best plan state: {bestPlanState}");
+            RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"  Selected best plan state: {bestPlanState}");
 
             var unsatisfiedPreconditions = await bestPlanState.GetUnsatisfiedPreconditions();
             if (!unsatisfiedPreconditions.Any()) {
                 // if there are no unsatisfied preconditions, then we have found a plan
-                Doctor?.Log(DGUDoctor.LogLevel.Info, $"  No unsatisfied preconditions. Found plan: {bestPlanState}");
+                RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Info, $"  No unsatisfied preconditions. Found plan: {bestPlanState}");
                 return new PlanResult(bestPlanState.CollectPredecessorActions());
             }
 
             // begin generating successor plan states
-            Doctor?.Log(DGUDoctor.LogLevel.Debug, $"  Generating successor plan states");
+            RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"  Generating successor plan states");
             var possibleNextActions = new List<VirtualAction>();
             var successorStates = new List<DGUPlanState>();
 
             // find actions that can satisfy the unsatisfied preconditions
             foreach (var unsatisfiedPrecondition in unsatisfiedPreconditions) {
-                Doctor?.Log(DGUDoctor.LogLevel.Trace, $"    Checking unsatisfied precondition: {unsatisfiedPrecondition}");
+                RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"    Checking unsatisfied precondition: {unsatisfiedPrecondition}");
                 var actionsApplicableToPrecondition = FindApplicableActions(unsatisfiedPrecondition, RootAgent.ConsumableActions);
                 foreach (var applicableAction in actionsApplicableToPrecondition) {
                     // var mappedAction = MapKeysToFacts(applicableAction, initialFacts);
                     // possibleNextActions.Add(mappedAction);
-                    Doctor?.Log(DGUDoctor.LogLevel.Trace, $"        Found applicable action: {applicableAction}");
+                    RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"        Found applicable action: {applicableAction}");
                     possibleNextActions.Add(applicableAction);
                 }
             }
 
             // simulate each action and generate a successor state
-            Doctor?.Log(DGUDoctor.LogLevel.Debug, $"    Simulating actions");
+            RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"    Simulating actions");
             foreach (var action in possibleNextActions) {
                 // simulate the execution of the action
                 var successorState = await SimulateActionExecution(bestPlanState, action);
@@ -97,35 +91,42 @@ public class DGUPlanner : IDGUDoctorable {
             }
 
             // add successor plan states to search space
-            Doctor?.Log(DGUDoctor.LogLevel.Debug, $"    Adding {successorStates.Count} successor plan states to search space");
+            RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"    Adding {successorStates.Count} successor plan states to search space");
             planStates.AddRange(successorStates);
         }
 
         // if we get here, then we were unable to find a plan
-        Doctor?.Log(DGUDoctor.LogLevel.Error, $"Unable to find a plan for agent {RootAgent}");
+        RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Error, $"Unable to find a plan for agent {RootAgent}");
         return null;
     }
 
     private Task<List<DGUPlanState>> GenerateInitialPlanStates() {
-        Doctor?.Log(DGUDoctor.LogLevel.Info, $"Generating initial plan states for agent {RootAgent}");
+        RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Info, $"Generating initial plan states for agent {RootAgent}");
 
         var states = new List<DGUPlanState>();
         var agent = RootAgent;
 
         // generate a root plan state
+        RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"  Generating root plan state");
         var rootSoftGoalConditions = agent.Goals.SelectMany(x => x.Conditions).ToList();
+        RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"    Root soft goal conditions: {rootSoftGoalConditions.Count}");
         var rootState = new DGUPlanState(GetNextId(), hardGoalConditions: null, softGoalConditions: rootSoftGoalConditions, parent: null, agent.FactMemory, actionGeneratedBy: null);
         states.Add(rootState);
 
         // for each consumable action, generate a plan state
         // we want the fact change to match the condition key of any goal
+        RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"  Generating plan states for consumable actions");
         foreach (var consumableAction in agent.ConsumableActions) {
+            RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"    Checking consumable action: {consumableAction}");
             // check the effect of the action and see if it matches the condition key of any goal
             foreach (var effect in consumableAction.Effects) {
+                RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"      Checking effect: {effect}");
                 foreach (var goal in agent.Goals) {
+                    RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"        Checking goal: {goal}");
                     // see if the effect key matches a goal condition
                     foreach (var condition in goal.Conditions) {
                         if (effect.Change == condition.SatisfactionCriterion) {
+                            RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"          Action effect {effect} is applicable to goal condition {condition}");
                             // this effect would satisfy a goal condition
                             // create a new plan state
                             var hardGoalConditions = new List<IPartialCondition> {
@@ -136,7 +137,7 @@ public class DGUPlanner : IDGUDoctorable {
                                 GetNextId(), hardGoalConditions: hardGoalConditions, softGoalConditions: rootSoftGoalConditions,
                                 parent: rootState, newStateFacts, actionGeneratedBy: consumableAction
                             );
-                            Doctor?.Log(DGUDoctor.LogLevel.Debug, $"Generated initial plan state {newState}");
+                            RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Debug, $"            Generated plan state: {newState}");
                             states.Add(newState);
                         }
                     }
@@ -155,7 +156,7 @@ public class DGUPlanner : IDGUDoctorable {
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
     private async Task<DGUPlanState> SimulateActionExecution(DGUPlanState inputState, VirtualAction action) {
-        Doctor?.Log(DGUDoctor.LogLevel.Trace, $"      Simulating action: {action}");
+        RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"      Simulating action: {action}");
         var newState = inputState.Fork();
         // collect all actions that lead to this state
         var predecessorActions = inputState.CollectPredecessorActions();
@@ -169,7 +170,7 @@ public class DGUPlanner : IDGUDoctorable {
 
                 // the world diff created by the action's effect
                 var actionEffectWorldDiff = new WorldDiff(effect.Change, correspondingFact, depth: 0);
-                Doctor?.Log(DGUDoctor.LogLevel.Trace, $"        Simulating effect: {effect}");
+                RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Trace, $"        Simulating effect: {effect}");
                 await SimulateWorldDiffsUntilEquilibrium(newState, effect, actionEffectWorldDiff);
             }
         }
@@ -185,7 +186,7 @@ public class DGUPlanner : IDGUDoctorable {
 
             // ensure the simulation depth did not run away
             if (diff.depth > Config.MaxSimulationDepth) {
-                Doctor?.Log(DGUDoctor.LogLevel.Error, $"Simulation depth exceeded {Config.MaxSimulationDepth}.");
+                RootAgent.Doctor?.Log(DGUDoctor.LogLevel.Error, $"Simulation depth exceeded {Config.MaxSimulationDepth}.");
                 throw new Exception($"Simulation depth exceeded {Config.MaxSimulationDepth}.");
             }
 
