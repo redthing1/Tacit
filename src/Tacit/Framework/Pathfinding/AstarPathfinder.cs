@@ -63,7 +63,7 @@ namespace Tacit.Framework.Pathfinding {
             Dictionary<T, T> cameFrom;
             var foundPath = Search(graph, start, goal, out cameFrom);
 
-            return foundPath ? RecontructPath(cameFrom, start, goal) : null;
+            return foundPath ? ReconstructPath(cameFrom, start, goal) : null;
         }
 
 
@@ -75,7 +75,7 @@ namespace Tacit.Framework.Pathfinding {
         /// <param name="start">Start.</param>
         /// <param name="goal">Goal.</param>
         /// <typeparam name="T">The 1st type parameter.</typeparam>
-        public static List<T> RecontructPath<T>(Dictionary<T, T> cameFrom, T start, T goal) {
+        public static List<T> ReconstructPath<T>(Dictionary<T, T> cameFrom, T start, T goal) {
             var path = new List<T>();
             var current = goal;
             path.Add(goal);
