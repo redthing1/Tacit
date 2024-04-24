@@ -1,4 +1,4 @@
-namespace Tacit;
+namespace Tacit.Legacy.Mind;
 
 public interface IMind {
     /// <summary>

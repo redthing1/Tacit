@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Tacit;
+namespace Tacit.Legacy.Plan;
 
 /// <summary>
 ///     automatically implements the more tedious Clone, Equality, and HashCode methods

@@ -1,7 +1,8 @@
 using System;
 using System.Threading;
+using Tacit.Legacy.Mind;
 
-namespace Tacit.Demos;
+namespace Tacit.Demos.Examples.UtilityAnt;
 
 public class AntMind : Mind<AntMind.State> {
     public AntMind(State state) : base(state) {

@@ -1,5 +1,6 @@
 using Tacit.Framework.GOAP;
 using Tacit.Framework.GOAP.Details;
+using Tacit.Legacy.Plan;
 
 namespace Tacit.Tests.Layers.Plan;
 

@@ -1,3 +1,3 @@
-namespace Tacit;
+namespace Tacit.Legacy.Mind;
 
 public abstract class MindSignal {}
