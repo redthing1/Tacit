@@ -1,0 +1,69 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace Tacit.Formal.FirstOrderLogic;
+
+public record class FOLRuleExpression {
+    public virtual string? ExpressionType => null;
+    public FOLRule? SingleRule { get; init; } = null;
+    public FOLRuleExpression[] Children { get; init; }
+
+    public FOLRuleExpression(IEnumerable<FOLRuleExpression> children) {
+        Children = children.ToArray();
+    }
+
+    public FOLRuleExpression(params FOLRuleExpression[] children) {
+        Children = children;
+    }
+
+    public FOLRuleExpression(FOLRule rule) {
+        SingleRule = rule;
+    }
+
+    // implicit constructor for FOLRule
+    public static implicit operator FOLRuleExpression(FOLRule rule) => new FOLRuleExpression(rule);
+
+    public override string ToString() {
+        var sb = new StringBuilder();
+        if (SingleRule != null) {
+            sb.Append(SingleRule);
+        } else {
+            sb.Append(ExpressionType ?? "");
+            sb.Append("(");
+            for (var i = 0; i < Children.Length; i++) {
+                if (i > 0) sb.Append(", ");
+                sb.Append(Children[i]);
+            }
+            sb.Append(")");
+        }
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// apply the expression to the knowledge base, and return whether new facts were produced
+    /// </summary>
+    /// <param name="kb"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public virtual bool Apply(FOLKnowledgeBase kb) {
+        throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// whether the expression matches the knowledge base
+    /// </summary>
+    /// <param name="kb"></param>
+    /// <param name="context"></param>
+    /// <returns></returns>
+    public virtual bool Matches(FOLKnowledgeBase kb, FOLMatchContext context) {
+        if (SingleRule != null) {
+            // single rule
+            return SingleRule.MatchOne(kb, context);
+        } else {
+            // compound rule
+            return Children.All(child => child.Matches(kb, context));
+        }
+    }
+};
