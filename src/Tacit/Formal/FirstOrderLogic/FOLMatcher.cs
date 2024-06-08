@@ -1,8 +1,10 @@
+using System.Collections.Generic;
+
 namespace Tacit.Formal.FirstOrderLogic;
 
 public static class FOLMatcher {
 
-    public static bool TrySubstitute(FOLFact fact, FOLRule rule, FOLMatchContext context) {
+    public static bool MatchTrySubstitute(FOLFact fact, FOLRule rule, FOLMatchContext context) {
         // given a rule with referents of the form (?x) and a fact with referents of the form (value)
         // see if we can find variables that can be substituted to satisfy the rule
 
@@ -30,14 +32,39 @@ public static class FOLMatcher {
                 }
             } else {
                 // we have a constant in the rule
-                if (factRft != ruleRft) {
-                    // the constants don't match
-                    return false;
-                }
+                // if (factRft != ruleRft) {
+                //     // the constants don't match
+                //     return false;
+                // }
+                continue;
             }
         }
 
         // at this point, we have successfully bound all variables
+        return true;
+    }
+
+    public static bool SubstituteFromBindings(FOLRule folRule, FOLMatchContext bindings, out FOLFact? fact) {
+        // given a rule and a set of bindings, substitute the bindings into the rule to produce a fact
+        var referents = new List<string>();
+        foreach (var referent in folRule.Referents) {
+            if (referent.StartsWith("?")) {
+                // we have a variable
+                if (bindings.Has(referent)) {
+                    var value = bindings.Get(referent);
+                    referents.Add(value);
+                } else {
+                    // we failed to find a binding
+                    fact = null;
+                    return false;
+                }
+            } else {
+                // we have a constant
+                referents.Add(referent);
+            }
+        }
+
+        fact = new FOLFact(folRule.Predicate, referents.ToArray());
         return true;
     }
 }

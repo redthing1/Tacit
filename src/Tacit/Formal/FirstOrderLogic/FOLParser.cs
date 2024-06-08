@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Tacit.Formal.FirstOrderLogic;
@@ -14,5 +15,17 @@ public class FOLParser {
         var predicate = match.Groups[1].Value;
         var referents = match.Groups[2].Value.Split(", ");
         return new FOLFact(predicate, referents);
+    }
+
+    public List<FOLFact> ParseFacts(string factListStr) {
+        // semicolon separated list of facts
+        // replace all whitespace with a single space
+        factListStr = Regex.Replace(factListStr, @"\s+", " ");
+        var factStrs = factListStr.Split("; ");
+        var facts = new List<FOLFact>();
+        foreach (var factStr in factStrs) {
+            facts.Add(ParseFact(factStr));
+        }
+        return facts;
     }
 }

@@ -13,4 +13,8 @@ public record class FOLKnowledgeBase(List<FOLFact> Facts) {
         
         return false;
     }
+
+    public void Add(List<FOLFact> newFacts) {
+        Facts.AddRange(newFacts);
+    }
 }

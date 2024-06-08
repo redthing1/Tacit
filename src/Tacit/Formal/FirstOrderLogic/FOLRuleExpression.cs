@@ -63,7 +63,27 @@ public record class FOLRuleExpression {
             return SingleRule.MatchOne(kb, context);
         } else {
             // compound rule
-            return Children.All(child => child.Matches(kb, context));
+
+            if (Children.Length == 1) {
+                return Children[0].Matches(kb, context);
+            }
+
+            throw new NotImplementedException();
+        }
+    }
+
+    public List<FOLFact> Populate(FOLKnowledgeBase kb, FOLMatchContext bindings) {
+        if (SingleRule != null) {
+            // single rule
+            var maybeFact = SingleRule.Populate(kb, bindings);
+            var newFacts = new List<FOLFact>();
+            if (maybeFact != null) {
+                newFacts.Add(maybeFact.Value);
+            }
+            return newFacts;
+        } else {
+            // compound rule
+            return Children.SelectMany(child => child.Populate(kb, bindings)).ToList();
         }
     }
 };
