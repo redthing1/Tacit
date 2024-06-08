@@ -12,7 +12,7 @@ an experimental task-planning/traditional AI library
 ## usage
 
 ```sh
-cd src/Tacit/Tacit.Demos
+cd src/Tacit.Demos
 dotnet run
 # to run an example of UDGOAP/DGU
 dotnet run dgu barfight
