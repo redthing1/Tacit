@@ -10,11 +10,32 @@ public record class FOLKnowledgeBase(List<FOLFact> Facts) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
+    public void Add(FOLFact newFact) {
+        Facts.Add(newFact);
+    }
+
+    public void Remove(FOLFact deleteFact) {
+        for (var i = 0; i < Facts.Count; i++) {
+            if (Facts[i].IsEqual(deleteFact)) {
+                Facts.RemoveAt(i);
+                return;
+            }
+        }
+    }
+
     public void Add(List<FOLFact> newFacts) {
-        Facts.AddRange(newFacts);
+        foreach (var fact in newFacts) {
+            Add(fact);
+        }
+    }
+
+    public void Remove(List<FOLFact> deleteFacts) {
+        foreach (var fact in deleteFacts) {
+            Remove(fact);
+        }
     }
 }

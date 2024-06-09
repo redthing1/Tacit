@@ -127,10 +127,10 @@ public class FOLTests {
         });
         var rules = new List<FOLRuleExpression> {
             new FOLConditional(
-                Antecedent: new FOLIfExpression(new FOLRule("likes", new[] {
+                antecedent: new FOLIfExpression(new FOLRule("likes", new[] {
                     "?person", "dessert"
                 })),
-                Consequent: new FOLThenExpression(new FOLRule("likes", new[] {
+                consequent: new FOLThenExpression(new FOLRule("likes", new[] {
                     "?person", "cake"
                 }))
             )
@@ -144,6 +144,35 @@ public class FOLTests {
         })));
     }
 
+    [Fact]
+    public void TestConditionalDelete1() {
+        // if alice likes pie, then alice likes cake
+        var kb = new FOLKnowledgeBase(new List<FOLFact> {
+            new FOLFact("available", new[] {
+                "waffles"
+            }),
+            new FOLFact("today", new[] {
+                "monday"
+            })
+        });
+        var rules = new List<FOLRuleExpression> {
+            new FOLConditional(
+                antecedent: new FOLIfExpression(new FOLRule("today", new[] {
+                    "monday"
+                })),
+                deleter: new FOLDeleteExpression(new FOLRule("available", new[] {
+                    "waffles"
+                }))
+            )
+        };
+        var prover = new FOLProver();
+        prover.ForwardChain(rules, kb);
+
+        // we should have removed available(waffles)
+        Assert.False(kb.Ask(new FOLFact("available", new[] {
+            "waffles"
+        })));
+    }
 
     [Fact]
     public void TestNegation1() {
@@ -164,7 +193,7 @@ public class FOLTests {
         var rules = new List<FOLRuleExpression> {
             // boss(?p, ?x) & boss(?p, ?y) & !self(?x, ?y) _> rival(?x, ?y)
             new FOLConditional(
-                Antecedent: new FOLIfExpression(new FOLAndExpression(
+                antecedent: new FOLIfExpression(new FOLAndExpression(
                     new FOLRuleExpression[] {
                         new FOLRule("boss", new[] {
                             "?p", "?x"
@@ -177,7 +206,7 @@ public class FOLTests {
                         }))
                     }
                 )),
-                Consequent: new FOLThenExpression(new FOLRule("rival", new[] {
+                consequent: new FOLThenExpression(new FOLRule("rival", new[] {
                     "?x", "?y"
                 }))
             )
@@ -216,7 +245,7 @@ public class FOLTests {
         var rules = new List<FOLRuleExpression> {
             // beats(?x, ?y) & beats(?y, ?z) _> beats(?x, ?z)
             new FOLConditional(
-                Antecedent: new FOLIfExpression(new FOLAndExpression(
+                antecedent: new FOLIfExpression(new FOLAndExpression(
                     new FOLRuleExpression[] {
                         new FOLRule("greater", new[] {
                             "?x", "?y"
@@ -226,7 +255,7 @@ public class FOLTests {
                         })
                     }
                 )),
-                Consequent: new FOLThenExpression(new FOLRuleExpression(
+                consequent: new FOLThenExpression(new FOLRuleExpression(
                     new FOLRule("greater", new[] {
                         "?x", "?z"
                     })
@@ -282,7 +311,7 @@ public class FOLTests {
         var rules = new List<FOLRuleExpression> {
             // beats(?x, ?y) & beats(?y, ?z) _> beats(?x, ?z)
             new FOLConditional(
-                Antecedent: new FOLIfExpression(new FOLAndExpression(
+                antecedent: new FOLIfExpression(new FOLAndExpression(
                     new FOLRuleExpression[] {
                         new FOLRule("beats", new[] {
                             "?x", "?y"
@@ -292,7 +321,7 @@ public class FOLTests {
                         })
                     }
                 )),
-                Consequent: new FOLThenExpression(new FOLRuleExpression(
+                consequent: new FOLThenExpression(new FOLRuleExpression(
                     new FOLRule("beats", new[] {
                         "?x", "?z"
                     })
