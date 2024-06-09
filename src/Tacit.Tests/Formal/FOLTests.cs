@@ -442,4 +442,55 @@ public class FOLTests {
         var grandchildRelationships = kb.Facts.Where(f => f.Predicate == "grandchild").ToList();
         Assert.Equal(7, grandchildRelationships.Count);
     }
+
+    [Fact]
+    void TestBackchainSimple1() {
+        var rb = new FOLLogicBuilder();
+
+        // rules
+        // healthy(?person) -> happy(?person)
+        // happy(?person) -> productive(?person)
+        // productive(?person) -> successful(?person)
+        // eat(?person, salad) -> healthy(?person)
+        // eat(?person, pizza) -> unhealthy(?person)
+
+        var rules = rb.Rules(
+            rb.Cond(
+                rb.If(rb.Rule("healthy", "?person")),
+                rb.Then(rb.Rule("happy", "?person"))
+            ),
+            rb.Cond(
+                rb.If(rb.Rule("happy", "?person")),
+                rb.Then(rb.Rule("productive", "?person"))
+            ),
+            rb.Cond(
+                rb.If(rb.Rule("productive", "?person")),
+                rb.Then(rb.Rule("successful", "?person"))
+            ),
+            rb.Cond(
+                rb.If(rb.Rule("eat", "?person", "salad")),
+                rb.Then(rb.Rule("healthy", "?person"))
+            ),
+            rb.Cond(
+                rb.If(rb.Rule("eat", "?person", "pizza")),
+                rb.Then(rb.Rule("unhealthy", "?person"))
+            )
+        );
+
+        // facts
+        var facts = rb.Facts(
+            rb.Fact("successful", "alice")
+        );
+        var kb = new FOLKnowledgeBase(facts);
+        
+        var prover = new FOLProver();
+        // figure out if alice is happy
+        // var aliceHappyChain = prover.BackwardChain(rules, kb, rb.Fact("happy", "alice"));
+        var aliceHappyChain = prover.BackchainToProve(rules, kb, rb.Fact("happy", "alice"), 1000);
+        Assert.NotNull(aliceHappyChain);
+        
+        prover.ForwardChain(new List<FOLRuleExpression>() {aliceHappyChain}, kb);
+        var aliceIsHappy = kb.Ask(rb.Fact("happy", "alice"));
+        Assert.True(aliceIsHappy);
+    }
 }

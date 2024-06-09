@@ -38,9 +38,9 @@ public record class FOLRule(string Predicate, string[] Referents) {
         return bindings;
     }
 
-    public FOLFact? Populate(FOLKnowledgeBase kb, FOLMatchContext bindings) {
+    public FOLFact? Populate(FOLMatchContext bindings) {
         // we expect to produce 0 or 1 facts from this rule (using it as a template)
-        if (FOLMatcher.SubstituteFromBindings(this, bindings, out var outFact)) {
+        if (FOLMatcher.SubstituteToFact(this, bindings, out var outFact)) {
             if (outFact == null) return null;
             return outFact;
         }

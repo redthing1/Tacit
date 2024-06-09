@@ -10,6 +10,10 @@ public record class FOLRuleExpression {
     public FOLRule? SingleRule { get; init; } = null;
     public FOLRuleExpression[] Children { get; init; }
 
+    public bool IsSimple() {
+        return SingleRule != null;
+    }
+
     public FOLRuleExpression(IEnumerable<FOLRuleExpression> children) {
         Children = children.ToArray();
     }
@@ -24,6 +28,15 @@ public record class FOLRuleExpression {
 
     // implicit constructor for FOLRule
     public static implicit operator FOLRuleExpression(FOLRule rule) => new FOLRuleExpression(rule);
+
+    // clone
+    public FOLRuleExpression Duplicate() {
+        if (SingleRule != null) {
+            return new FOLRuleExpression(SingleRule);
+        } else {
+            return new FOLRuleExpression(Children.Select(c => c.Duplicate()));
+        }
+    }
 
     public override string ToString() {
         var sb = new StringBuilder();
@@ -48,7 +61,23 @@ public record class FOLRuleExpression {
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
     public virtual bool Apply(FOLKnowledgeBase kb) {
-        throw new NotImplementedException();
+        if (SingleRule != null) {
+            var bindings = SingleRule.MatchAllPossible(kb);
+            var newFactsProduced = false;
+            foreach (var binding in bindings) {
+                var newFacts = PopulateSingle(binding);
+                foreach (var newFact in newFacts) {
+                    // ensure the fact is not already known
+                    if (!kb.Ask(newFact)) {
+                        kb.Add(newFact);
+                        newFactsProduced = true;
+                    }
+                }
+            }
+            return newFactsProduced;
+        } else {
+            throw new NotImplementedException();
+        }
     }
 
     public virtual List<FOLMatchContext> MatchAllPossible(FOLKnowledgeBase kb, FOLMatchContext? currentContext = null) {
@@ -67,18 +96,36 @@ public record class FOLRuleExpression {
         }
     }
 
-    public List<FOLFact> Populate(FOLKnowledgeBase kb, FOLMatchContext bindings) {
+    // populate basic rules with bindings to create facts
+    public List<FOLFact> PopulateSingle(FOLMatchContext bindings) {
         if (SingleRule != null) {
             // single rule
-            var maybeFact = SingleRule.Populate(kb, bindings);
+            var maybeFact = SingleRule.Populate(bindings);
             var newFacts = new List<FOLFact>();
             if (maybeFact != null) {
                 newFacts.Add(maybeFact.Value);
             }
             return newFacts;
         } else {
+            // invalid for compound rules
+            throw new InvalidOperationException("Cannot populate compound rule");
+        }
+    }
+
+    // specialize rules to substitute bindings into variables
+    public FOLRuleExpression PopulateSpecialized(FOLMatchContext bindings) {
+        if (SingleRule != null) {
+            // single rule
+            var specializedRule = FOLMatcher.SubstituteToSpecializedRule(SingleRule, bindings);
+
+            return new FOLRuleExpression(specializedRule);
+        } else {
             // compound rule
-            return Children.SelectMany(child => child.Populate(kb, bindings)).ToList();
+            var dupe = Duplicate();
+            for (var i = 0; i < Children.Length; i++) {
+                dupe.Children[i] = Children[i].PopulateSpecialized(bindings);
+            }
+            return dupe;
         }
     }
 };

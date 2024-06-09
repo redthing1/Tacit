@@ -15,7 +15,7 @@ public record class FOLThenExpression(FOLRuleExpression Expression) : FOLRuleExp
     public override string? ExpressionType => "Then";
 
     public List<FOLFact> Produce(FOLKnowledgeBase kb, FOLMatchContext context) {
-        var populatedFacts = Expression.Populate(kb, context);
+        var populatedFacts = Expression.PopulateSingle(context);
         var newFacts = new List<FOLFact>();
         foreach (var newFact in populatedFacts) {
             // ensure the fact is not already known
@@ -36,7 +36,7 @@ public record class FOLDeleteExpression(FOLRuleExpression Expression) : FOLRuleE
     public override string? ExpressionType => "Delete";
 
     public List<FOLFact> Delete(FOLKnowledgeBase kb, FOLMatchContext context) {
-        var populatedFacts = Expression.Populate(kb, context);
+        var populatedFacts = Expression.PopulateSingle(context);
         var deletedFacts = new List<FOLFact>();
         foreach (var fact in populatedFacts) {
             // ensure the fact is known

@@ -6,8 +6,17 @@ namespace Tacit.Formal.FirstOrderLogic;
 public record class FOLKnowledgeBase {
     public List<FOLFact> Facts { get; init; }
 
+
+    public FOLKnowledgeBase() {
+        Facts = new List<FOLFact>();
+    }
+
     public FOLKnowledgeBase(List<FOLFact> facts) {
         Facts = facts.ToList();
+    }
+
+    public FOLKnowledgeBase(FOLKnowledgeBase kb) {
+        Facts = kb.Facts.ToList();
     }
 
     public bool Ask(FOLFact question) {
@@ -19,6 +28,14 @@ public record class FOLKnowledgeBase {
         }
 
         return false;
+    }
+    
+    public bool AddIfUnique(FOLFact newFact) {
+        if (Ask(newFact)) {
+            return false;
+        }
+        Add(newFact);
+        return true;
     }
 
     public void Add(FOLFact newFact) {

@@ -44,7 +44,7 @@ public static class FOLMatcher {
         return true;
     }
 
-    public static bool SubstituteFromBindings(FOLRule rule, FOLMatchContext bindings, out FOLFact? fact) {
+    public static bool SubstituteToFact(FOLRule rule, FOLMatchContext bindings, out FOLFact? fact) {
         // given a rule and a set of bindings, substitute the bindings into the rule to produce a fact
         var referents = new List<string>();
         foreach (var referent in rule.Referents) {
@@ -66,5 +66,30 @@ public static class FOLMatcher {
 
         fact = new FOLFact(rule.Predicate, referents.ToArray());
         return true;
+    }
+    
+    public static FOLRule SubstituteToSpecializedRule(FOLRule rule, FOLMatchContext bindings) {
+        // given a rule and a set of bindings, substitute the bindings into the rule to produce a specialized rule
+        var referents = new List<string>();
+        foreach (var referent in rule.Referents) {
+            if (referent.StartsWith("?")) {
+                // we have a variable
+                if (bindings.Has(referent)) {
+                    // specialize the variable using the bound value
+                    var value = bindings.Get(referent);
+                    referents.Add(value);
+                } else {
+                    // add the variable back in
+                    referents.Add(referent);
+                }
+            } else {
+                // we have a constant
+                referents.Add(referent);
+            }
+        }
+
+        var specializedRule = new FOLRule(rule.Predicate, referents.ToArray());
+        
+        return specializedRule;
     }
 }
