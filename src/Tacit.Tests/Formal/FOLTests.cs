@@ -64,7 +64,7 @@ public class FOLTests {
             })
         );
         var bindings = bothLikePieRule.MatchAllPossible(kb);
-        Assert.True(bindings.Count > 0);
+        Assert.Equal(1, bindings.Count);
     }
 
     [Fact]
@@ -89,7 +89,30 @@ public class FOLTests {
             })
         );
         var bindings = personLikesPieAndCake.MatchAllPossible(kb);
-        Assert.True(bindings.Count > 0);
+        Assert.Equal(1, bindings.Count);
+        var context1 = bindings[0];
+        Assert.Equal("alice", context1.Get("?person"));
+    }
+
+    [Fact]
+    public void TestDisjunction1() {
+        var kb = new FOLKnowledgeBase(new List<FOLFact> {
+            new FOLFact("likes", new[] {
+                "alice", "pie"
+            }),
+        });
+        var likesPieOrCake = new FOLRuleExpression(
+            new FOLOrExpression(new FOLRuleExpression[] {
+                new FOLRule("likes", new[] {
+                    "?person", "pie"
+                }),
+                new FOLRule("likes", new[] {
+                    "?person", "cake"
+                }),
+            })
+        );
+        var bindings = likesPieOrCake.MatchAllPossible(kb);
+        Assert.Equal(1, bindings.Count);
         var context1 = bindings[0];
         Assert.Equal("alice", context1.Get("?person"));
     }
@@ -162,7 +185,7 @@ public class FOLTests {
 
         var prover = new FOLProver();
         prover.ForwardChain(rules, kb);
-        
+
         // ensure no self-rival
         Assert.False(kb.Ask(new FOLFact("rival", new[] {
             "bucciarati", "bucciarati"
