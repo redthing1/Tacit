@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Tacit.Formal.FirstOrderLogic;
 
 public record class FOLIfExpression(FOLRuleExpression Expression) : FOLRuleExpression(new[] {
@@ -11,13 +14,19 @@ public record class FOLThenExpression(FOLRuleExpression Expression) : FOLRuleExp
 }) {
     public override string? ExpressionType => "Then";
 
-    public bool Produce(FOLKnowledgeBase kb, FOLMatchContext bindings) {
-        var producedFacts = false;
-        // produce new facts
-        var newFacts = Expression.Populate(kb, bindings);
-        kb.Add(newFacts);
-        producedFacts = newFacts.Count > 0;
-        return producedFacts;
+    public List<FOLFact> Produce(FOLKnowledgeBase kb, FOLMatchContext context) {
+        var populatedFacts = Expression.Populate(kb, context);
+        var newFacts = new List<FOLFact>();
+        foreach (var newFact in populatedFacts) {
+            // ensure the fact is not already known
+            if (!kb.Ask(newFact)) {
+                newFacts.Add(newFact);
+            }
+        }
+        if (newFacts.Any()) {
+            kb.Add(newFacts);
+        }
+        return newFacts;
     }
 }
 
@@ -26,22 +35,21 @@ public record class FOLConditional(FOLIfExpression Antecedent, FOLThenExpression
 }) {
     public override string? ExpressionType => "IfThen";
 
-    public override bool Matches(FOLKnowledgeBase kb, FOLMatchContext context) {
-        // match the antecedent
-        if (!Antecedent.Matches(kb, context)) {
-            return false;
-        }
-        
-        return true;
-    }
-
     public override bool Apply(FOLKnowledgeBase kb) {
-        // check if it matches
-        var context = new FOLMatchContext();
-        if (!Matches(kb, context)) {
+        // get all matches for the antecedent
+        var matchBindings = Antecedent.MatchAllPossible(kb, null);
+        if (matchBindings.Count == 0) {
+            // no matches
             return false;
         }
-        // produce new facts
-        return Consequent.Produce(kb, context);
+
+        var numProductions = 0;
+
+        foreach (var context in matchBindings) {
+            var producedFacts = Consequent.Produce(kb, context);
+            numProductions += producedFacts.Count;
+        }
+
+        return numProductions > 0;
     }
 }

@@ -51,21 +51,16 @@ public record class FOLRuleExpression {
         throw new NotImplementedException();
     }
 
-    /// <summary>
-    /// whether the expression matches the knowledge base
-    /// </summary>
-    /// <param name="kb"></param>
-    /// <param name="context"></param>
-    /// <returns></returns>
-    public virtual bool Matches(FOLKnowledgeBase kb, FOLMatchContext context) {
+    public virtual List<FOLMatchContext> MatchAllPossible(FOLKnowledgeBase kb, FOLMatchContext? currentContext = null) {
         if (SingleRule != null) {
             // single rule
-            return SingleRule.MatchOne(kb, context);
+            var bindings = SingleRule.MatchAllPossible(kb, currentContext);
+            return bindings;
         } else {
             // compound rule
 
             if (Children.Length == 1) {
-                return Children[0].Matches(kb, context);
+                return Children[0].MatchAllPossible(kb, currentContext);
             }
 
             throw new NotImplementedException();

@@ -50,4 +50,16 @@ public class FOLMatchContext {
             _bindings[binding.Key] = binding.Value;
         }
     }
+    
+    public bool IsCompatibleWith(FOLMatchContext other) {
+        foreach (var binding in _bindings) {
+            if (other._bindings.TryGetValue(binding.Key, out var otherValue)) {
+                if (otherValue != binding.Value) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 }

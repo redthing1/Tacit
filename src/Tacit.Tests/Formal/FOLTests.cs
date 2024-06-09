@@ -18,9 +18,9 @@ public class FOLTests {
         var kb = new FOLKnowledgeBase(new List<FOLFact> {
             cakeBetter
         });
-        var context1 = new FOLMatchContext();
-        var isMatch = betterRule.Matches(kb, context1);
-        Assert.True(isMatch);
+        var bindings = betterRule.MatchAllPossible(kb);
+        Assert.True(bindings.Count > 0);
+        var context1 = bindings[0];
         Assert.Equal("cake", context1.Get("?x"));
         Assert.Equal("pie", context1.Get("?y"));
     }
@@ -63,9 +63,8 @@ public class FOLTests {
                 }),
             })
         );
-        var context1 = new FOLMatchContext();
-        var isMatch = bothLikePieRule.Matches(kb, context1);
-        Assert.True(isMatch);
+        var bindings = bothLikePieRule.MatchAllPossible(kb);
+        Assert.True(bindings.Count > 0);
     }
 
     [Fact]
@@ -89,9 +88,9 @@ public class FOLTests {
                 }),
             })
         );
-        var context1 = new FOLMatchContext();
-        var isMatch = personLikesPieAndCake.Matches(kb, context1);
-        Assert.True(isMatch);
+        var bindings = personLikesPieAndCake.MatchAllPossible(kb);
+        Assert.True(bindings.Count > 0);
+        var context1 = bindings[0];
         Assert.Equal("alice", context1.Get("?person"));
     }
 
@@ -119,6 +118,63 @@ public class FOLTests {
         // we should have produced likes(alice, cake)
         Assert.True(kb.Ask(new FOLFact("likes", new[] {
             "alice", "cake"
+        })));
+    }
+
+
+    [Fact]
+    public void TestNegation1() {
+        var kb = new FOLKnowledgeBase(new List<FOLFact> {
+            new FOLFact("boss", new[] {
+                "diavolo", "bucciarati"
+            }),
+            new FOLFact("boss", new[] {
+                "diavolo", "polpo"
+            }),
+            new FOLFact("self", new[] {
+                "bucciarati", "bucciarati"
+            }),
+            new FOLFact("self", new[] {
+                "polpo", "polpo"
+            }),
+        });
+        var rules = new List<FOLRuleExpression> {
+            // boss(?p, ?x) & boss(?p, ?y) & !self(?x, ?y) _> rival(?x, ?y)
+            new FOLConditional(
+                Antecedent: new FOLIfExpression(new FOLAndExpression(
+                    new FOLRuleExpression[] {
+                        new FOLRule("boss", new[] {
+                            "?p", "?x"
+                        }),
+                        new FOLRule("boss", new[] {
+                            "?p", "?y"
+                        }),
+                        new FOLNotExpression(new FOLRule("self", new[] {
+                            "?x", "?y"
+                        }))
+                    }
+                )),
+                Consequent: new FOLThenExpression(new FOLRule("rival", new[] {
+                    "?x", "?y"
+                }))
+            )
+        };
+
+        var prover = new FOLProver();
+        prover.ForwardChain(rules, kb);
+        
+        // ensure no self-rival
+        Assert.False(kb.Ask(new FOLFact("rival", new[] {
+            "bucciarati", "bucciarati"
+        })));
+
+        // we should have produced rival(bucciarati, polpo)
+        Assert.True(kb.Ask(new FOLFact("rival", new[] {
+            "bucciarati", "polpo"
+        })));
+        // and also rival(polpo, bucciarati)
+        Assert.True(kb.Ask(new FOLFact("rival", new[] {
+            "polpo", "bucciarati"
         })));
     }
 
@@ -222,7 +278,7 @@ public class FOLTests {
         };
         var prover = new FOLProver();
         prover.ForwardChain(rules, kb);
-        
+
         // check produced facts
         // 1. diamond_sword beats iron_axe
         Assert.True(kb.Ask(new FOLFact("beats", new[] {
