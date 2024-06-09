@@ -424,12 +424,22 @@ public class FOLTests {
                 rb.Then(rb.Rule("grandchild", "?z", "?x"))
             )
         );
-        
+
         var prover = new FOLProver();
         prover.ForwardChain(rules, kb);
-        
+
         // we expect exactly 14 cousins
-        var cousins = kb.Facts.Where(f => f.Predicate == "cousin").ToList();
-        Assert.Equal(14, cousins.Count);
+        var cousinRelationships = kb.Facts.Where(f => f.Predicate == "cousin").ToList();
+        Assert.Equal(14, cousinRelationships.Count);
+        // we expect 10 parent/child relationships
+        var parentRelationships = kb.Facts.Where(f => f.Predicate == "parent").ToList();
+        Assert.Equal(10, parentRelationships.Count);
+        var childRelationships = kb.Facts.Where(f => f.Predicate == "child").ToList();
+        Assert.Equal(10, childRelationships.Count);
+        // we expect 7 grandparent/grandchild relationships
+        var grandparentRelationships = kb.Facts.Where(f => f.Predicate == "grandparent").ToList();
+        Assert.Equal(7, grandparentRelationships.Count);
+        var grandchildRelationships = kb.Facts.Where(f => f.Predicate == "grandchild").ToList();
+        Assert.Equal(7, grandchildRelationships.Count);
     }
 }
