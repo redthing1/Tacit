@@ -296,89 +296,43 @@ public class FOLTests {
     }
 
     [Fact]
-    public void TestRuleBuilder() {
-        // this provides a fluent C# API for building rules
+    public void TestMinecraftWeaponsLogic() {
         var rb = new FOLLogicBuilder();
-        // initial facts
+
+        // Initial facts
         var initialFacts = rb.Facts(
-            rb.Fact("bigger", "bread", "grain"),
-            rb.Fact("bigger", "toaster", "bread"),
-            rb.Fact("bigger", "house", "toaster"),
-            rb.Fact("bigger", "city", "house")
+            rb.Fact("beats", "diamond_sword", "diamond_axe"),
+            rb.Fact("beats", "stone_pick", "stone_shovel"),
+            rb.Fact("beats", "diamond_axe", "iron_axe"),
+            rb.Fact("beats", "iron_axe", "stone_shovel"),
+            rb.Fact("beats", "iron_pick", "stone_pick"),
+            rb.Fact("beats", "iron_axe", "iron_pick"),
+            rb.Fact("beats", "stone_shovel", "fist")
         );
+
         var kb = new FOLKnowledgeBase(initialFacts);
-        // rules
+
+        // Rules
         var rules = rb.Rules(
             rb.Cond(
                 rb.If(
                     rb.And(
-                        rb.Rule("bigger", "?x", "?y"),
-                        rb.Rule("bigger", "?y", "?z")
-                    )),
+                        rb.Rule("beats", "?x", "?y"),
+                        rb.Rule("beats", "?y", "?z")
+                    )
+                ),
                 rb.Then(
-                    rb.Rule("bigger", "?x", "?z")
+                    rb.Rule("beats", "?x", "?z")
                 )
             )
         );
 
         var prover = new FOLProver();
         prover.ForwardChain(rules, kb);
-        
-        // check produced facts
-        Assert.True(kb.Ask(rb.Fact("bigger", "house", "grain")));
-        Assert.True(kb.Ask(rb.Fact("bigger", "city", "toaster")));
-        Assert.True(kb.Ask(rb.Fact("bigger", "city", "bread")));
-        Assert.True(kb.Ask(rb.Fact("bigger", "city", "grain")));
-    }
 
-    [Fact]
-    public void TestMinecraftWeaponsLogic() {
-        var parser = new FOLParser();
-        var initialFacts = parser.ParseFacts(
-            "beats(diamond_sword, diamond_axe); " +
-            "beats(stone_pick, stone_shovel); " +
-            "beats(diamond_axe, iron_axe); " +
-            "beats(iron_axe, stone_shovel); " +
-            "beats(iron_pick, stone_pick); " +
-            "beats(iron_axe, iron_pick); " +
-            "beats(stone_shovel, fist)"
-        );
-        var kb = new FOLKnowledgeBase(initialFacts);
-        var rules = new List<FOLRuleExpression> {
-            // beats(?x, ?y) & beats(?y, ?z) _> beats(?x, ?z)
-            new FOLConditional(
-                antecedent: new FOLIfExpression(new FOLAndExpression(
-                    new FOLRuleExpression[] {
-                        new FOLRule("beats", new[] {
-                            "?x", "?y"
-                        }),
-                        new FOLRule("beats", new[] {
-                            "?y", "?z"
-                        })
-                    }
-                )),
-                consequent: new FOLThenExpression(new FOLRuleExpression(
-                    new FOLRule("beats", new[] {
-                        "?x", "?z"
-                    })
-                ))
-            )
-        };
-        var prover = new FOLProver();
-        prover.ForwardChain(rules, kb);
-
-        // check produced facts
-        // 1. diamond_sword beats iron_axe
-        Assert.True(kb.Ask(new FOLFact("beats", new[] {
-            "diamond_sword", "iron_axe"
-        })));
-        // 2. diamond_axe beats fist
-        Assert.True(kb.Ask(new FOLFact("beats", new[] {
-            "diamond_axe", "fist"
-        })));
-        // 3. iron_pick beats stone_shovel
-        Assert.True(kb.Ask(new FOLFact("beats", new[] {
-            "iron_pick", "stone_shovel"
-        })));
+        // Check produced facts
+        Assert.True(kb.Ask(rb.Fact("beats", "diamond_sword", "iron_axe")));
+        Assert.True(kb.Ask(rb.Fact("beats", "diamond_axe", "fist")));
+        Assert.True(kb.Ask(rb.Fact("beats", "iron_pick", "stone_shovel")));
     }
 }
