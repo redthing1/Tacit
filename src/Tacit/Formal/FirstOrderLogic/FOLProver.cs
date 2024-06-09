@@ -77,27 +77,43 @@ public class FOLProver {
             if (!antecedentExpression.IsConstant()) {
                 throw new ArgumentException("Antecedent must be fully instantiated");
             }
+            
+            // we are only capable of backchaining with depth=1 at most
+            // ensure antecedent children are all simple (non-compound) rules
+            if (antecedentExpression is FOLAndExpression) {
+                foreach (var child in antecedentExpression.Children) {
+                    // ensure child expression is simple
+                    if (!child.IsSimple()) {
+                        throw new ArgumentOutOfRangeException("child", child, "Antecedent child expression must be simple");
+                    }
+                    // ensure child is fully instantiated
+                    if (!child.SingleRule!.IsConstant()) {
+                        throw new ArgumentException("Antecedent child must be fully instantiated");
+                    }
+                }
+            }
 
             if (antecedentExpression is FOLAndExpression) {
                 // if the antecedent is a conjunction, we must prove all subclauses
+                var subgoalTrees = new List<FOLRuleExpression>();
                 foreach (var subgoal in antecedentExpression.Children) {
-                    var subgoalTree = BackwardChain(rules, subgoal);
+                    // convert this simple, instantiated rule to a fact
+                    var subgoalFact = subgoal.SingleRule!.ToFact();
+                    var subgoalTree = BackwardChain(rules, subgoalFact);
                     if (subgoalTree != null) {
                         // add to ways to prove
-                        waysToProve.Add(subgoalTree);
+                        subgoalTrees.Add(subgoalTree);
                     }
                 }
+                // create an and expression from the subgoal trees
+                var andSubgoalTree = new FOLAndExpression(subgoalTrees.ToArray());
+                waysToProve.Add(andSubgoalTree);
             } else if (antecedentExpression.IsSimple()) {
                 // antecedent is a single rule
-                var antecedentRule = antecedentExpression.SingleRule!;
                 // then it's a prerequisite
                 waysToProve.Add(antecedentExpression);
-                // ensure the rule is fully instantiated to only have constants
-                if (!antecedentRule.IsConstant()) {
-                    throw new ArgumentException("Antecedent must be fully instantiated");
-                }
-                // for now we just unwrap it
-                var antecedentFact = antecedentRule.ToFact();
+                // convert this simple, instantiated rule to a fact
+                var antecedentFact = antecedentExpression.SingleRule!.ToFact();
                 // now we must try to satisfy this subgoal
                 var subgoalTree = BackwardChain(rules, antecedentFact);
                 if (subgoalTree != null) {
