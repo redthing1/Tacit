@@ -70,9 +70,23 @@ public class FOLProver {
             if (antecedentExpression is FOLAndExpression) {
                 // if the antecedent is a conjunction, we must prove all subclauses
                 throw new NotImplementedException("Conjunctions not yet supported");
-            } else {
-                // if the antecedent is a single clause, add it to the list of ways to prove the hypothesis
+            } else if (antecedentExpression.IsSimple()) {
+                // antecedent is a single rule
+                var antecedentRule = antecedentExpression.SingleRule!;
+                // then it's a prerequisite
                 waysToProve.Add(antecedentExpression);
+                // ensure the rule is fully instantiated to only have constants
+                if (!antecedentRule.IsConstant()) {
+                    throw new ArgumentException("Antecedent must be fully instantiated");
+                }
+                // for now we just unwrap it
+                var antecedentFact = antecedentRule.ToFact();
+                // now we must try to satisfy this subgoal
+                var subgoalTree = BackwardChain(rules, antecedentFact);
+                if (subgoalTree != null) {
+                    // add to ways to prove
+                    waysToProve.Add(subgoalTree);
+                }
             }
         }
 
@@ -85,29 +99,33 @@ public class FOLProver {
             // only one way to prove the hypothesis
             var wayToProve = waysToProve[0];
             return wayToProve;
+        } else {
+            // there are multiple ways to prove, create a disjunction
+            var orWaysToProve = new FOLOrExpression(waysToProve.ToArray());
+            return orWaysToProve;
         }
 
         return null;
     }
 
-    public FOLRuleExpression? BackchainToProve(List<FOLRuleExpression> rules, FOLKnowledgeBase kb, FOLFact hypothesis, long maxSteps) {
-        List<FOLRuleExpression> proofRuleList = new();
-
-        // repeatedly backchain until we either have the required facts, or we can't prove the hypothesis
-        for (var step = 1; step <= maxSteps; step++) {
-            var hypothesisProof = BackwardChain(rules, hypothesis);
-            if (hypothesisProof == null) {
-                // impossible to prove the hypothesis
-                return null;
-            }
-            proofRuleList.Add(hypothesisProof);
-
-            // try to execute the proof
-            var proofKb = new FOLKnowledgeBase(kb);
-            ForwardChain(rules, proofKb);
-        }
-
-        // ran out of steps
-        return null;
-    }
+    // public FOLRuleExpression? BackchainToProve(List<FOLRuleExpression> rules, FOLKnowledgeBase kb, FOLFact hypothesis, long maxSteps) {
+    //     List<FOLRuleExpression> proofRuleList = new();
+    //
+    //     // repeatedly backchain until we either have the required facts, or we can't prove the hypothesis
+    //     for (var step = 1; step <= maxSteps; step++) {
+    //         var hypothesisProof = BackwardChain(rules, hypothesis);
+    //         if (hypothesisProof == null) {
+    //             // impossible to prove the hypothesis
+    //             return null;
+    //         }
+    //         proofRuleList.Add(hypothesisProof);
+    //
+    //         // try to execute the proof
+    //         var proofKb = new FOLKnowledgeBase(kb);
+    //         ForwardChain(rules, proofKb);
+    //     }
+    //
+    //     // ran out of steps
+    //     return null;
+    // }
 }

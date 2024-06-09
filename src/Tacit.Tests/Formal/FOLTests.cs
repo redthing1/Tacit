@@ -484,13 +484,8 @@ public class FOLTests {
         var kb = new FOLKnowledgeBase(facts);
         
         var prover = new FOLProver();
-        // figure out if alice is happy
-        // var aliceHappyChain = prover.BackwardChain(rules, kb, rb.Fact("happy", "alice"));
-        var aliceHappyChain = prover.BackchainToProve(rules, kb, rb.Fact("happy", "alice"), 1000);
+        // what would it take for alice to be happy?
+        var aliceHappyChain = prover.BackwardChain(rules, rb.Fact("happy", "alice"));
         Assert.NotNull(aliceHappyChain);
-        
-        prover.ForwardChain(new List<FOLRuleExpression>() {aliceHappyChain}, kb);
-        var aliceIsHappy = kb.Ask(rb.Fact("happy", "alice"));
-        Assert.True(aliceIsHappy);
     }
 }

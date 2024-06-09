@@ -47,4 +47,21 @@ public record class FOLRule(string Predicate, string[] Referents) {
 
         return null;
     }
+
+    public bool IsConstant() {
+        foreach (var referent in Referents) {
+            if (referent.StartsWith("?")) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public FOLFact ToFact() {
+        if (!IsConstant()) {
+            throw new System.Exception("Cannot convert rule with variables to fact");
+        }
+        return new FOLFact(Predicate, Referents);
+    }
 }
