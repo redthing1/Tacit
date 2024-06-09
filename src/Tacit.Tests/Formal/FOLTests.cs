@@ -477,15 +477,65 @@ public class FOLTests {
             )
         );
 
-        // facts
-        var facts = rb.Facts(
-            rb.Fact("successful", "alice")
-        );
-        var kb = new FOLKnowledgeBase(facts);
-        
         var prover = new FOLProver();
         // what would it take for alice to be happy?
         var aliceHappyChain = prover.BackwardChain(rules, rb.Fact("happy", "alice"));
         Assert.NotNull(aliceHappyChain);
     }
+
+    [Fact]
+    public void TestBackchainHikingEligibility() {
+        var rb = new FOLLogicBuilder();
+
+        // Rules
+        // healthy(?person) & good_weather() -> can_hike(?person)
+        // exercise_regularly(?person) -> healthy(?person)
+        // eat_well(?person) -> healthy(?person)
+        // forecast(?day, sunny) -> good_weather()
+
+        var rules = rb.Rules(
+            rb.Cond(
+                rb.If(
+                    rb.And(
+                        rb.Rule("healthy", "?person"),
+                        rb.Rule("good_weather")
+                    )
+                ),
+                rb.Then(rb.Rule("can_hike", "?person"))
+            ),
+            rb.Cond(
+                rb.If(rb.Rule("exercise_regularly", "?person")),
+                rb.Then(rb.Rule("healthy", "?person"))
+            ),
+            rb.Cond(
+                rb.If(rb.Rule("eat_well", "?person")),
+                rb.Then(rb.Rule("healthy", "?person"))
+            ),
+            rb.Cond(
+                rb.If(rb.Rule("forecast", "?day", "sunny")),
+                rb.Then(rb.Rule("good_weather"))
+            )
+        );
+
+        var prover = new FOLProver();
+
+        // What would it take for alice to be able to hike?
+        var aliceCanHikeChain = prover.BackwardChain(rules, rb.Fact("can_hike", "alice"));
+        Assert.NotNull(aliceCanHikeChain);
+
+        // // Check if alice needs to be healthy and the weather needs to be good
+        // Assert.True(aliceCanHikeChain.Contains(rb.Rule("healthy", "alice")));
+        // Assert.True(aliceCanHikeChain.Contains(rb.Rule("good_weather")));
+        //
+        // // Check how alice can be healthy
+        // Assert.True(aliceCanHikeChain.Contains(rb.Rule("exercise_regularly", "alice")) || aliceCanHikeChain.Contains(rb.Rule("eat_well", "alice")));
+        //
+        // // What would it take for the weather to be good?
+        // var goodWeatherChain = prover.BackwardChain(rules, rb.Fact("good_weather"));
+        // Assert.NotNull(goodWeatherChain);
+        //
+        // // Check if the weather needs to be sunny
+        // Assert.True(goodWeatherChain.Contains(rb.Rule("forecast", "?day", "sunny")));
+    }
+
 }

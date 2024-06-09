@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Tacit.Formal.FirstOrderLogic;
 
@@ -12,7 +13,11 @@ public record class FOLOrExpression(FOLRuleExpression[] Children) : FOLRuleExpre
             var bindings = condition.MatchAllPossible(kb, currentContext);
             satisfactoryBindings.AddRange(bindings);
         }
-        
+
         return satisfactoryBindings;
+    }
+
+    public override FOLRuleExpression Duplicate() {
+        return new FOLOrExpression(Children.Select(c => c.Duplicate()).ToArray());
     }
 }

@@ -47,4 +47,8 @@ public record class FOLAndExpression(FOLRuleExpression[] Children) : FOLRuleExpr
             }
         }
     }
+
+    public override FOLRuleExpression Duplicate() {
+        return new FOLAndExpression(Children.Select(c => c.Duplicate()).ToArray());
+    }
 }

@@ -9,20 +9,26 @@ public class FOLProver {
     /// </summary>
     /// <param name="rules"></param>
     /// <param name="kb"></param>
-    public void ForwardChain(List<FOLRuleExpression> rules, FOLKnowledgeBase kb) {
+    /// <param name="maxSteps"></param>
+    public void ForwardChain(List<FOLRuleExpression> rules, FOLKnowledgeBase kb, long maxSteps = 1000) {
         // apply rules to a dataset in order
 
         // whether new facts were produced
         bool newFactsProduced = true;
 
         // apply rules until no new facts are produced
-        while (newFactsProduced) {
+        for (var i = 0; i < maxSteps; i++) {
             newFactsProduced = false;
             foreach (var rule in rules) {
                 bool produced = rule.Apply(kb);
                 if (produced) {
                     newFactsProduced = true;
                 }
+            }
+
+            if (!newFactsProduced) {
+                // no new facts were produced, we are done
+                break;
             }
         }
     }
@@ -67,9 +73,20 @@ public class FOLProver {
             var antecedentExpression = condRule.Antecedent.Expression.PopulateSpecialized(consequentBinding);
             antecedentExpression = Simplify(antecedentExpression);
 
+            // ensure the antecedent expression has no variables
+            if (!antecedentExpression.IsConstant()) {
+                throw new ArgumentException("Antecedent must be fully instantiated");
+            }
+
             if (antecedentExpression is FOLAndExpression) {
                 // if the antecedent is a conjunction, we must prove all subclauses
-                throw new NotImplementedException("Conjunctions not yet supported");
+                foreach (var subgoal in antecedentExpression.Children) {
+                    var subgoalTree = BackwardChain(rules, subgoal);
+                    if (subgoalTree != null) {
+                        // add to ways to prove
+                        waysToProve.Add(subgoalTree);
+                    }
+                }
             } else if (antecedentExpression.IsSimple()) {
                 // antecedent is a single rule
                 var antecedentRule = antecedentExpression.SingleRule!;
@@ -107,25 +124,4 @@ public class FOLProver {
 
         return null;
     }
-
-    // public FOLRuleExpression? BackchainToProve(List<FOLRuleExpression> rules, FOLKnowledgeBase kb, FOLFact hypothesis, long maxSteps) {
-    //     List<FOLRuleExpression> proofRuleList = new();
-    //
-    //     // repeatedly backchain until we either have the required facts, or we can't prove the hypothesis
-    //     for (var step = 1; step <= maxSteps; step++) {
-    //         var hypothesisProof = BackwardChain(rules, hypothesis);
-    //         if (hypothesisProof == null) {
-    //             // impossible to prove the hypothesis
-    //             return null;
-    //         }
-    //         proofRuleList.Add(hypothesisProof);
-    //
-    //         // try to execute the proof
-    //         var proofKb = new FOLKnowledgeBase(kb);
-    //         ForwardChain(rules, proofKb);
-    //     }
-    //
-    //     // ran out of steps
-    //     return null;
-    // }
 }

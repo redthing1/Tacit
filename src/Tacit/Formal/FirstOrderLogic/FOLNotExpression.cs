@@ -9,7 +9,7 @@ public record class FOLNotExpression(FOLRuleExpression Expression) : FOLRuleExpr
 
     public override List<FOLMatchContext> MatchAllPossible(FOLKnowledgeBase kb, FOLMatchContext? currentContext = null) {
         if (currentContext == null) currentContext = new FOLMatchContext();
-        
+
         var populatedFacts = Expression.PopulateSingle(currentContext);
         FOLRuleExpression newKey;
         if (populatedFacts.Count > 0) {
@@ -30,5 +30,9 @@ public record class FOLNotExpression(FOLRuleExpression Expression) : FOLRuleExpr
                 currentContext
             };
         }
+    }
+
+    public override FOLRuleExpression Duplicate() {
+        return new FOLNotExpression(Expression.Duplicate());
     }
 }

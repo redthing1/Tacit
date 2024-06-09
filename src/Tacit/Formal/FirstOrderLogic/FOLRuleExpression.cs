@@ -30,11 +30,11 @@ public record class FOLRuleExpression {
     public static implicit operator FOLRuleExpression(FOLRule rule) => new FOLRuleExpression(rule);
 
     // clone
-    public FOLRuleExpression Duplicate() {
+    public virtual FOLRuleExpression Duplicate() {
         if (SingleRule != null) {
             return new FOLRuleExpression(SingleRule);
         } else {
-            return new FOLRuleExpression(Children.Select(c => c.Duplicate()));
+            throw new NotImplementedException();
         }
     }
 
@@ -126,6 +126,14 @@ public record class FOLRuleExpression {
                 dupe.Children[i] = Children[i].PopulateSpecialized(bindings);
             }
             return dupe;
+        }
+    }
+
+    public bool IsConstant() {
+        if (SingleRule != null) {
+            return SingleRule.IsConstant();
+        } else {
+            return Children.All(c => c.IsConstant());
         }
     }
 };
