@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Tacit.Formal.FirstOrderLogic;
 using Xunit;
 
@@ -334,5 +335,101 @@ public class FOLTests {
         Assert.True(kb.Ask(rb.Fact("beats", "diamond_sword", "iron_axe")));
         Assert.True(kb.Ask(rb.Fact("beats", "diamond_axe", "fist")));
         Assert.True(kb.Ask(rb.Fact("beats", "iron_pick", "stone_shovel")));
+    }
+
+    [Fact]
+    public void TestBlackFamilyCousins() {
+        var rb = new FOLLogicBuilder();
+
+        // initial facts
+        var facts = rb.Facts(
+            rb.Fact("person", "sirius"),
+            rb.Fact("person", "regulus"),
+            rb.Fact("person", "walburga"),
+            rb.Fact("person", "alphard"),
+            rb.Fact("person", "cygnus"),
+            rb.Fact("person", "pollux"),
+            rb.Fact("person", "bellatrix"),
+            rb.Fact("person", "andromeda"),
+            rb.Fact("person", "narcissa"),
+            rb.Fact("person", "nymphadora"),
+            rb.Fact("person", "draco"),
+            rb.Fact("parent", "walburga", "sirius"),
+            rb.Fact("parent", "walburga", "regulus"),
+            rb.Fact("parent", "pollux", "walburga"),
+            rb.Fact("parent", "pollux", "alphard"),
+            rb.Fact("parent", "pollux", "cygnus"),
+            rb.Fact("parent", "cygnus", "bellatrix"),
+            rb.Fact("parent", "cygnus", "andromeda"),
+            rb.Fact("parent", "cygnus", "narcissa"),
+            rb.Fact("parent", "andromeda", "nymphadora"),
+            rb.Fact("parent", "narcissa", "draco")
+        );
+
+        // knowledge base
+        var kb = new FOLKnowledgeBase(facts);
+
+        // rules
+        var rules = rb.Rules(
+            // self
+            rb.Cond(
+                rb.If(rb.Rule("person", "?x")),
+                rb.Then(rb.Rule("self", "?x", "?x"))
+            ),
+            // sibling
+            rb.Cond(
+                rb.If(
+                    rb.And(
+                        rb.Rule("parent", "?p", "?x"),
+                        rb.Rule("parent", "?p", "?y"),
+                        rb.Not(rb.Rule("self", "?x", "?y"))
+                    )
+                ),
+                rb.Then(rb.Rule("sibling", "?x", "?y"))
+            ),
+            // child
+            rb.Cond(
+                rb.If(rb.Rule("parent", "?x", "?y")),
+                rb.Then(rb.Rule("child", "?y", "?x"))
+            ),
+            // cousin
+            rb.Cond(
+                rb.If(
+                    rb.And(
+                        rb.Rule("parent", "?p", "?x"),
+                        rb.Rule("sibling", "?p", "?q"),
+                        rb.Rule("parent", "?q", "?y")
+                    )
+                ),
+                rb.Then(rb.Rule("cousin", "?x", "?y"))
+            ),
+            // grandparent
+            rb.Cond(
+                rb.If(
+                    rb.And(
+                        rb.Rule("parent", "?x", "?y"),
+                        rb.Rule("parent", "?y", "?z")
+                    )
+                ),
+                rb.Then(rb.Rule("grandparent", "?x", "?z"))
+            ),
+            // grandchild
+            rb.Cond(
+                rb.If(
+                    rb.And(
+                        rb.Rule("parent", "?x", "?y"),
+                        rb.Rule("parent", "?y", "?z")
+                    )
+                ),
+                rb.Then(rb.Rule("grandchild", "?z", "?x"))
+            )
+        );
+        
+        var prover = new FOLProver();
+        prover.ForwardChain(rules, kb);
+        
+        // we expect exactly 14 cousins
+        var cousins = kb.Facts.Where(f => f.Predicate == "cousin").ToList();
+        Assert.Equal(14, cousins.Count);
     }
 }
