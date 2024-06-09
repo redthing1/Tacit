@@ -296,6 +296,42 @@ public class FOLTests {
     }
 
     [Fact]
+    public void TestRuleBuilder() {
+        // this provides a fluent C# API for building rules
+        var rb = new FOLLogicBuilder();
+        // initial facts
+        var initialFacts = rb.Facts(
+            rb.Fact("bigger", "bread", "grain"),
+            rb.Fact("bigger", "toaster", "bread"),
+            rb.Fact("bigger", "house", "toaster"),
+            rb.Fact("bigger", "city", "house")
+        );
+        var kb = new FOLKnowledgeBase(initialFacts);
+        // rules
+        var rules = rb.Rules(
+            rb.Cond(
+                rb.If(
+                    rb.And(
+                        rb.Rule("bigger", "?x", "?y"),
+                        rb.Rule("bigger", "?y", "?z")
+                    )),
+                rb.Then(
+                    rb.Rule("bigger", "?x", "?z")
+                )
+            )
+        );
+
+        var prover = new FOLProver();
+        prover.ForwardChain(rules, kb);
+        
+        // check produced facts
+        Assert.True(kb.Ask(rb.Fact("bigger", "house", "grain")));
+        Assert.True(kb.Ask(rb.Fact("bigger", "city", "toaster")));
+        Assert.True(kb.Ask(rb.Fact("bigger", "city", "bread")));
+        Assert.True(kb.Ask(rb.Fact("bigger", "city", "grain")));
+    }
+
+    [Fact]
     public void TestMinecraftWeaponsLogic() {
         var parser = new FOLParser();
         var initialFacts = parser.ParseFacts(

@@ -1,8 +1,15 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Tacit.Formal.FirstOrderLogic;
 
-public record class FOLKnowledgeBase(List<FOLFact> Facts) {
+public record class FOLKnowledgeBase {
+    public List<FOLFact> Facts { get; init; }
+
+    public FOLKnowledgeBase(List<FOLFact> facts) {
+        Facts = facts.ToList();
+    }
+
     public bool Ask(FOLFact question) {
         // check if the fact is in the knowledge base
         foreach (var fact in Facts) {
